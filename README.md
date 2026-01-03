@@ -12,7 +12,7 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 
 # Team Name
 
-**<team HopX>**
+**HopX**
 
 ---
 
