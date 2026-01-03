@@ -2,19 +2,18 @@ services:
   # Backend FastAPI service
   - type: web
     name: hospital-pulse-backend
-    env: docker
-    repo: https://github.com/ByteQuest-2025/GFGBQ-Team-hopx 
+    runtime: docker
+    repo: https://github.com/ByteQuest-2025/GFGBQ-Team-hopx
     rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
     healthCheckPath: /health
     envVars:
       - key: PYTHONPATH
         value: /opt/render/project/src
       - key: OPENAI_API_KEY
-        sync: false
+        sync: true
       - key: OPENAI_MODEL
         value: gpt-4o-mini
-        sync: false
     disk:
       name: data
       mountPath: /opt/render/project/src/data
@@ -24,11 +23,10 @@ services:
   - type: web
     name: hospital-pulse-frontend
     runtime: static
-    repo: https://github.com/YOUR_USERNAME/bytequest  # replace with your repo
+    repo: https://github.com/ByteQuest-2025/GFGBQ-Team-hopx
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE
         value: https://hospital-pulse-backend.onrender.com
-        sync: false
