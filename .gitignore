@@ -88,5 +88,5 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
-# Optional: keep synthetic data out of repo if you prefer
-# /data/synthetic_data.csv
+# Keep backend/env/.env out of repo
+/backend/env/.env
