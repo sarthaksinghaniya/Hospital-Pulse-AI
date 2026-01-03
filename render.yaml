@@ -27,7 +27,7 @@ services:
     repo: https://github.com/YOUR_USERNAME/bytequest  # replace with your repo
     rootDir: frontend
     buildCommand: npm ci && npm run build
-    publishDirectory: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE
         value: https://hospital-pulse-backend.onrender.com
