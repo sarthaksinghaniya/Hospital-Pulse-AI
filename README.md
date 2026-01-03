@@ -16,15 +16,6 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 
 ---
 
-# Deployed Link (Optional)
-
-**Frontend:** [https://your-deployed-frontend-link](https://your-deployed-frontend-link)
-**Backend:** [https://your-deployed-backend-link](https://your-deployed-backend-link)
-
-*(Optional – can be left blank if not deployed)*
-
----
-
 # drive link 
 ppt , video
 
