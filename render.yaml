@@ -8,12 +8,13 @@ services:
     dockerfilePath: Dockerfile
     healthCheckPath: /health
     envVars:
-      - key: PYTHONPATH
-        value: /opt/render/project/src
-      - key: OPENAI_API_KEY
-        sync: true
-      - key: OPENAI_MODEL
-        value: gpt-4o-mini
+  - key: PYTHONPATH
+    value: /opt/render/project/src
+  - key: OPENAI_API_KEY
+    value: dummy_key_for_now
+  - key: OPENAI_MODEL
+    value: gpt-4o-mini
+
     disk:
       name: data
       mountPath: /opt/render/project/src/data
@@ -28,5 +29,6 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     envVars:
-      - key: VITE_API_BASE
-        value: https://hospital-pulse-backend.onrender.com
+  - key: VITE_API_BASE
+    value: https://hospital-pulse-backend.onrender.com
+
