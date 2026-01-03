@@ -12,7 +12,7 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 
 # Team Name
 
-**<HopX>**
+**<team HopX>**
 
 ---
 
@@ -24,7 +24,11 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 *(Optional – can be left blank if not deployed)*
 
 ---
-drive link 
+
+# drive link 
+
+
+
 ## About the Project (Optional but Recommended)
 
 Hospital Pulse AI is an AI-powered hospital operations decision-support platform that forecasts Emergency Department load, ICU demand, and staff workload. It provides early warnings, interpretable risk scores, and actionable recommendations to help hospital administrators prepare in advance and prevent overload situations.
