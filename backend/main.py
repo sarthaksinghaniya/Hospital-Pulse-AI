@@ -1,9 +1,16 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import predictions, alerts, recommendations
-from services.synthetic_data import ensure_synthetic_dataset
-from services.model_service import ModelService
-from services.model_registry import set_model_service
+
+from .routes import predictions, alerts, recommendations, feature
+from .services.synthetic_data import ensure_synthetic_dataset
+from .services.model_service import ModelService
+from .services.model_registry import set_model_service
+
+ENV_PATH = Path(__file__).resolve().parents[1] / "env" / ".env"
+load_dotenv(ENV_PATH)
 
 app = FastAPI(title="Hospital Pulse AI", version="0.1.0")
 
@@ -33,6 +40,7 @@ def health_check():
 app.include_router(predictions.router, prefix="/predict", tags=["predictions"], dependencies=[])
 app.include_router(alerts.router, prefix="/alerts", tags=["alerts"], dependencies=[])
 app.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"], dependencies=[])
+app.include_router(feature.router, prefix="/feature", tags=["feature"], dependencies=[])
 
 
 @app.get("/")

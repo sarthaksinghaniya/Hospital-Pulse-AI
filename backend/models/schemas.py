@@ -13,11 +13,13 @@ class TimeSeriesPoint(BaseModel):
 class EmergencyPrediction(BaseModel):
     forecast: List[TimeSeriesPoint]
     surge_probability: float = Field(ge=0, le=1)
+    summary: str
 
 
 class ICUPrediction(BaseModel):
     required_beds: List[TimeSeriesPoint]
     peak_risk: float = Field(ge=0, le=1)
+    summary: str
 
 
 class StaffWorkload(BaseModel):
@@ -28,6 +30,7 @@ class StaffWorkload(BaseModel):
 
 class StaffPrediction(BaseModel):
     workload: List[StaffWorkload]
+    summary: str
 
 
 class Alert(BaseModel):
@@ -44,3 +47,31 @@ class Recommendation(BaseModel):
 
 class PredictionRequest(BaseModel):
     horizon_hours: int = Field(168, description="How many hours ahead to predict")
+
+
+class AlertsResponse(BaseModel):
+    alerts: List[Alert]
+    summary: str
+
+
+class RecommendationsResponse(BaseModel):
+    recommendations: List[Recommendation]
+    summary: str
+
+
+class SurgeEarlyWarning(BaseModel):
+    score: float = Field(ge=0, le=1)
+    risk_level: str  # low | medium | high
+    surge_probability: float = Field(ge=0, le=1)
+    icu_peak_risk: float = Field(ge=0, le=1)
+    staff_max_risk: float = Field(ge=0, le=1)
+    explanation: str
+    actions: List[str]
+
+
+class HopxChatRequest(BaseModel):
+    message: str
+
+
+class HopxChatResponse(BaseModel):
+    reply: str
