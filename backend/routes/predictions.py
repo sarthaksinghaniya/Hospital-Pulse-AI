@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
-from ..models.schemas import EmergencyPrediction, ICUPrediction, PredictionRequest, StaffPrediction, TimeSeriesPoint
-from ..services.model_registry import get_model_service
-from ..services.model_service import ModelService
+from models.schemas import EmergencyPrediction, ICUPrediction, PredictionRequest, StaffPrediction, TimeSeriesPoint
+from services.model_registry import get_model_service
+from services.model_service import ModelService
 
 router = APIRouter()
 

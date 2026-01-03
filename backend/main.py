@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import predictions, alerts, recommendations, feature
-from .services.synthetic_data import ensure_synthetic_dataset
-from .services.model_service import ModelService
-from .services.model_registry import set_model_service
+from routes import predictions, alerts, recommendations, feature
+from services.synthetic_data import ensure_synthetic_dataset
+from services.model_service import ModelService
+from services.model_registry import set_model_service
 
 ENV_PATH = Path(__file__).resolve().parents[1] / "env" / ".env"
 load_dotenv(ENV_PATH)

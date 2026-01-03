@@ -11,7 +11,7 @@ from sklearn.linear_model import LinearRegression
 
 from .synthetic_data import ensure_synthetic_dataset
 from .llm_service import LLMService
-from ..models.schemas import Alert, Recommendation, StaffPrediction, StaffWorkload, TimeSeriesPoint, SurgeEarlyWarning, HopxChatRequest, HopxChatResponse
+from models.schemas import Alert, Recommendation, StaffPrediction, StaffWorkload, TimeSeriesPoint, SurgeEarlyWarning, HopxChatRequest, HopxChatResponse
 
 
 @dataclass

@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from openai import OpenAI
 
-from ..models.schemas import Alert, Recommendation, TimeSeriesPoint, StaffWorkload
+from models.schemas import Alert, Recommendation, TimeSeriesPoint, StaffWorkload
 
 
 class LLMService:

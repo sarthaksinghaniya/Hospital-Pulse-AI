@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from ..models.schemas import AlertsResponse
-from ..services.model_registry import get_model_service
+from models.schemas import AlertsResponse
+from services.model_registry import get_model_service
+from services.model_service import ModelService
 
 router = APIRouter()
 

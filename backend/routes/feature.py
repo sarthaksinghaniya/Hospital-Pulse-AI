@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from ..services.model_registry import get_model_service
-from ..models.schemas import SurgeEarlyWarning, HopxChatRequest, HopxChatResponse
+from models.schemas import SurgeEarlyWarning, HopxChatRequest, HopxChatResponse
+from services.model_registry import get_model_service
+from services.model_service import ModelService
 
 router = APIRouter()
 
