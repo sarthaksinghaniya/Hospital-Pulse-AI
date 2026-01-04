@@ -14,11 +14,20 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 
 **HopX**
 
+**Team Leader:** Sarthak Singhaniya  
+**Portfolio:** https://sarthaksinghaniya.netlify.app
+
 ---
 
-# drive link 
-ppt , video
+# 📂 Project Resources (Google Drive)
 
+All supporting materials related to this project—including PPT, demo video, screenshots, and additional documentation—are available at the link below:
+
+**🔗 Google Drive Folder:**  
+
+https://drive.google.com/drive/folders/11GgfuIbG_-fXJ0N8HJHEx1o7tdpqXqP3?usp=sharing
+
+------
 
 ## About the Project (Optional but Recommended)
 
