@@ -413,7 +413,7 @@ const NoShowPrediction = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        <Predict sx={{ mr: 2, verticalAlign: 'middle' }} />
+        <Analytics sx={{ mr: 2, verticalAlign: 'middle' }} />
         No-Show Prediction
       </Typography>
 

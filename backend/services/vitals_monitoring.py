@@ -10,7 +10,8 @@ This service handles time-series vitals monitoring for patients, including:
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Any
+import json
 from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
@@ -29,6 +30,23 @@ class VitalsMonitoringService:
             'respiratory_rate': (12, 20),
             'blood_glucose': (70, 140)
         }
+    
+    def _convert_numpy_types(self, obj):
+        """Convert numpy types to Python native types for JSON serialization."""
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, (np.int64, np.int32)):
+            return int(obj)
+        elif isinstance(obj, (np.float64, np.float32)):
+            return float(obj)
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        elif isinstance(obj, dict):
+            return {key: self._convert_numpy_types(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_numpy_types(item) for item in obj]
+        else:
+            return obj
         
     def generate_synthetic_vitals(self, num_patients: int = 50, days: int = 7) -> None:
         """Generate synthetic patient vitals data for testing."""
@@ -153,14 +171,14 @@ class VitalsMonitoringService:
                     'is_abnormal': len(out_of_range) > len(vital_data) * 0.3  # >30% abnormal
                 }
         
-        return {
+        return self._convert_numpy_types({
             'patient_id': patient_id,
             'analysis_period_hours': hours_back,
             'total_readings': len(patient_data),
             'abnormalities': abnormalities,
             'trends': trends,
             'last_reading_time': patient_data['timestamp'].max().isoformat() if not patient_data.empty else None
-        }
+        })
     
     def check_missing_readings(self, patient_id: str, hours_back: int = 24) -> Dict:
         """Check for missing or infrequent readings."""
@@ -197,7 +215,7 @@ class VitalsMonitoringService:
                     'missing_percentage': missing_count / len(patient_data) * 100
                 }
         
-        return {
+        return self._convert_numpy_types({
             'patient_id': patient_id,
             'analysis_period_hours': hours_back,
             'expected_readings': expected_readings,
@@ -207,7 +225,7 @@ class VitalsMonitoringService:
             'max_gap_hours': large_gaps.max() if len(large_gaps) > 0 else 0,
             'missing_data_by_vital': missing_data,
             'is_concerning': actual_readings < expected_readings * 0.7  # <70% coverage
-        }
+        })
     
     def generate_stability_indicators(self, patient_id: str, hours_back: int = 24) -> Dict:
         """Generate overall stability indicators for patient vitals."""
@@ -248,7 +266,7 @@ class VitalsMonitoringService:
             stability_level = "Critically Unstable"
             color = "red"
         
-        return {
+        return self._convert_numpy_types({
             'patient_id': patient_id,
             'stability_score': stability_score,
             'stability_level': stability_level,
@@ -258,7 +276,7 @@ class VitalsMonitoringService:
             'data_coverage_percentage': missing['coverage_percentage'],
             'recommendations': self._generate_recommendations(trends, missing, stability_score),
             'last_updated': datetime.now().isoformat()
-        }
+        })
     
     def _generate_recommendations(self, trends: Dict, missing: Dict, score: int) -> List[str]:
         """Generate clinical recommendations based on vitals analysis."""
@@ -285,12 +303,13 @@ class VitalsMonitoringService:
     
     def get_patient_summary(self, patient_id: str) -> Dict:
         """Get comprehensive summary of patient vitals status."""
-        return {
+        summary = {
             'patient_id': patient_id,
             'trend_analysis': self.detect_abnormal_trends(patient_id),
             'missing_readings': self.check_missing_readings(patient_id),
             'stability_indicators': self.generate_stability_indicators(patient_id)
         }
+        return self._convert_numpy_types(summary)
     
     def get_all_patients_overview(self) -> List[Dict]:
         """Get overview of all patients' vitals status."""
@@ -311,4 +330,4 @@ class VitalsMonitoringService:
                     'last_updated': stability['last_updated']
                 })
         
-        return sorted(overview, key=lambda x: x['stability_score'])
+        return self._convert_numpy_types(sorted(overview, key=lambda x: x['stability_score']))

@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel
 import sys
 import os
+import json
 
 # Add the services directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
@@ -44,12 +45,21 @@ def get_patient_summary(request: PatientVitalsRequest):
     """Get comprehensive summary of patient vitals status."""
     try:
         summary = vitals_service.get_patient_summary(request.patient_id)
+        # Convert numpy types to Python native types for JSON serialization
+        import json
+        summary_str = json.dumps(summary, default=str)
+        summary_clean = json.loads(summary_str)
+        
         return {
             "status": "success",
-            "data": summary
+            "data": summary_clean
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log the error for debugging
+        import traceback
+        print(f"Error in patient-summary: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.post("/trends")
 def detect_abnormal_trends(request: VitalsAnalysisRequest):
