@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import predictions, alerts, recommendations, feature
+from routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation
 from services.synthetic_data import ensure_synthetic_dataset
 from services.model_service import ModelService
 from services.model_registry import set_model_service
@@ -41,6 +41,11 @@ app.include_router(predictions.router, prefix="/predict", tags=["predictions"], 
 app.include_router(alerts.router, prefix="/alerts", tags=["alerts"], dependencies=[])
 app.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"], dependencies=[])
 app.include_router(feature.router, prefix="/feature", tags=["feature"], dependencies=[])
+app.include_router(vitals.router, prefix="/vitals", tags=["vitals"], dependencies=[])
+app.include_router(adherence.router, prefix="/adherence", tags=["adherence"], dependencies=[])
+app.include_router(noshow.router, prefix="/noshow", tags=["noshow"], dependencies=[])
+app.include_router(deterioration_risk.router, prefix="/risk", tags=["risk"], dependencies=[])
+app.include_router(escalation.router, prefix="/escalation", tags=["escalation"], dependencies=[])
 
 
 @app.get("/")
@@ -54,5 +59,13 @@ def root():
             "/predict/staff",
             "/alerts",
             "/recommendations",
+            "/vitals/overview",
+            "/vitals/patient-summary",
+            "/adherence/population-overview",
+            "/adherence/score",
+            "/noshow/train",
+            "/noshow/predict",
+            "/risk/assess",
+            "/escalation/dashboard",
         ],
     }
