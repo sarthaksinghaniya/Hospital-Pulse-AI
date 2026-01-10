@@ -26,7 +26,7 @@ class VitalsAnalysisRequest(BaseModel):
     patient_id: str
     hours_back: int = 24
 
-@router.get("/vitals/overview")
+@router.get("/overview")
 def get_vitals_overview():
     """Get overview of all patients' vitals status."""
     try:
@@ -39,7 +39,7 @@ def get_vitals_overview():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/vitals/patient-summary")
+@router.post("/patient-summary")
 def get_patient_summary(request: PatientVitalsRequest):
     """Get comprehensive summary of patient vitals status."""
     try:
@@ -51,7 +51,7 @@ def get_patient_summary(request: PatientVitalsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/vitals/trends")
+@router.post("/trends")
 def detect_abnormal_trends(request: VitalsAnalysisRequest):
     """Detect abnormal trends in patient vitals."""
     try:
@@ -66,7 +66,7 @@ def detect_abnormal_trends(request: VitalsAnalysisRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/vitals/missing-readings")
+@router.post("/missing-readings")
 def check_missing_readings(request: VitalsAnalysisRequest):
     """Check for missing or infrequent readings."""
     try:
@@ -81,7 +81,7 @@ def check_missing_readings(request: VitalsAnalysisRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/vitals/stability")
+@router.post("/stability")
 def generate_stability_indicators(request: VitalsAnalysisRequest):
     """Generate overall stability indicators for patient vitals."""
     try:
@@ -96,7 +96,7 @@ def generate_stability_indicators(request: VitalsAnalysisRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/vitals/data")
+@router.get("/raw-data")
 def get_vitals_data(patient_id: Optional[str] = Query(None)):
     """Get raw vitals data for a patient or all patients."""
     try:

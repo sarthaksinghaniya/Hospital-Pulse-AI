@@ -27,7 +27,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  TextField
 } from '@mui/material';
 import {
   ThumbUp,
@@ -46,7 +47,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
 
 const AdherenceNudging = () => {
   const [populationOverview, setPopulationOverview] = useState(null);
@@ -60,11 +61,20 @@ const AdherenceNudging = () => {
 
   const fetchPopulationOverview = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${API_BASE}/adherence/population-overview`);
-      setPopulationOverview(response.data.data);
+      console.log('Adherence overview response:', response.data);
+      if (response.data && response.data.data) {
+        setPopulationOverview(response.data.data);
+      } else {
+        setPopulationOverview(null);
+        setError('No population data available');
+      }
     } catch (err) {
+      console.error('Error fetching population overview:', err);
       setError('Failed to fetch population overview');
+      setPopulationOverview(null);
     } finally {
       setLoading(false);
     }
@@ -142,19 +152,19 @@ const AdherenceNudging = () => {
           <LinearProgress />
         ) : error ? (
           <Alert severity="error">{error}</Alert>
-        ) : populationOverview ? (
+        ) : populationOverview && typeof populationOverview === 'object' && Object.keys(populationOverview).length > 0 ? (
           <Grid container spacing={3}>
             <Grid item xs={12} md={3}>
               <Paper sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="h6">Total Patients</Typography>
-                <Typography variant="h4">{populationOverview.total_patients}</Typography>
+                <Typography variant="h4">{populationOverview?.total_patients || 0}</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} md={3}>
               <Paper sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="h6">Average Score</Typography>
                 <Typography variant="h4">
-                  {populationOverview.average_adherence_score?.toFixed(1)}
+                  {populationOverview?.average_adherence_score?.toFixed(1) || '0.0'}
                 </Typography>
               </Paper>
             </Grid>
@@ -162,7 +172,7 @@ const AdherenceNudging = () => {
               <Paper sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="h6">High Risk</Typography>
                 <Typography variant="h4" color="error">
-                  {populationOverview.high_risk_patients}
+                  {populationOverview?.high_risk_patients || 0}
                 </Typography>
               </Paper>
             </Grid>
@@ -170,7 +180,7 @@ const AdherenceNudging = () => {
               <Paper sx={{ p: 2, textAlign: 'center' }}>
                 <Typography variant="h6">Excellent</Typography>
                 <Typography variant="h4" color="success">
-                  {populationOverview.excellent_adherence_patients}
+                  {populationOverview?.excellent_adherence_patients || 0}
                 </Typography>
               </Paper>
             </Grid>
@@ -178,7 +188,7 @@ const AdherenceNudging = () => {
               <Typography variant="h6" gutterBottom>Adherence Distribution</Typography>
               <Box sx={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={Object.entries(populationOverview.adherence_distribution || {}).map(([level, count]) => ({
+                  <BarChart data={Object.entries(populationOverview?.adherence_distribution || {}).map(([level, count]) => ({
                     level,
                     count
                   }))}>

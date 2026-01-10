@@ -34,7 +34,7 @@ class PatientDataRequest(BaseModel):
 class BatchPredictionRequest(BaseModel):
     patients: List[PatientDataRequest]
 
-@router.post("/noshow/train")
+@router.post("/train")
 def train_no_show_model():
     """Train the no-show prediction model."""
     try:
@@ -46,7 +46,7 @@ def train_no_show_model():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/noshow/predict")
+@router.post("/predict")
 def predict_no_show(request: PatientDataRequest):
     """Predict no-show probability for a single patient."""
     try:
@@ -67,7 +67,7 @@ def predict_no_show(request: PatientDataRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/noshow/batch-predict")
+@router.post("/batch-predict")
 def batch_predict_no_show(request: BatchPredictionRequest):
     """Predict no-show for multiple patients."""
     try:
@@ -91,7 +91,7 @@ def batch_predict_no_show(request: BatchPredictionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/noshow/model-insights")
+@router.get("/model-insights")
 def get_model_insights():
     """Get insights about the trained model."""
     try:
@@ -103,7 +103,7 @@ def get_model_insights():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/noshow/feature-importance")
+@router.get("/feature-importance")
 def get_feature_importance():
     """Get feature importance from the trained model."""
     try:
@@ -123,7 +123,7 @@ def get_feature_importance():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/noshow/load-model")
+@router.post("/load-model")
 def load_trained_model():
     """Load a previously trained model."""
     try:

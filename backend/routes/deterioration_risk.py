@@ -45,7 +45,7 @@ class RiskTrendsRequest(BaseModel):
     patient_id: str
     historical_assessments: List[Dict]
 
-@router.post("/risk/assess")
+@router.post("/assess")
 def calculate_overall_risk_score(request: PatientRiskRequest):
     """Calculate comprehensive deterioration risk score for a patient."""
     try:
@@ -67,7 +67,7 @@ def calculate_overall_risk_score(request: PatientRiskRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/risk/population-overview")
+@router.post("/population-overview")
 def get_population_risk_overview(request: PopulationRiskRequest):
     """Get overview of risk distribution across patient population."""
     try:
@@ -79,7 +79,7 @@ def get_population_risk_overview(request: PopulationRiskRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/risk/trends")
+@router.post("/trends")
 def track_risk_trends(request: RiskTrendsRequest):
     """Track risk trends for a specific patient over time."""
     try:
@@ -94,7 +94,7 @@ def track_risk_trends(request: RiskTrendsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/risk/thresholds")
+@router.get("/thresholds")
 def get_risk_thresholds():
     """Get current risk thresholds used for categorization."""
     try:

@@ -39,7 +39,7 @@ class EscalationReportRequest(BaseModel):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
 
-@router.post("/escalation/check-triggers")
+@router.post("/check-triggers")
 def check_escalation_triggers(request: EscalationTriggerRequest):
     """Check if escalation should be triggered based on risk assessment."""
     try:
@@ -70,7 +70,7 @@ def check_escalation_triggers(request: EscalationTriggerRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/escalation/acknowledge")
+@router.post("/acknowledge")
 def acknowledge_escalation(request: EscalationAcknowledgeRequest):
     """Acknowledge an escalation event."""
     try:
@@ -86,7 +86,7 @@ def acknowledge_escalation(request: EscalationAcknowledgeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/escalation/resolve")
+@router.post("/resolve")
 def resolve_escalation(request: EscalationResolveRequest):
     """Resolve an escalation event."""
     try:
@@ -103,7 +103,7 @@ def resolve_escalation(request: EscalationResolveRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/escalation/patient/{patient_id}")
+@router.get("/patient/{patient_id}")
 def get_patient_escalations(patient_id: str, status: Optional[str] = Query(None)):
     """Get all escalations for a patient, optionally filtered by status."""
     try:
@@ -119,7 +119,7 @@ def get_patient_escalations(patient_id: str, status: Optional[str] = Query(None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/escalation/active")
+@router.get("/active")
 def get_active_escalations(escalation_level: Optional[str] = Query(None)):
     """Get all active (pending/acknowledged/in_progress) escalations."""
     try:
@@ -134,7 +134,7 @@ def get_active_escalations(escalation_level: Optional[str] = Query(None)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/escalation/dashboard")
+@router.get("/dashboard")
 def get_escalation_dashboard():
     """Get comprehensive data for escalation dashboard."""
     try:
@@ -146,7 +146,7 @@ def get_escalation_dashboard():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/escalation/report")
+@router.post("/report")
 def generate_escalation_report(request: EscalationReportRequest):
     """Generate comprehensive escalation report."""
     try:
@@ -162,7 +162,7 @@ def generate_escalation_report(request: EscalationReportRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/escalation/rules")
+@router.get("/rules")
 def get_escalation_rules():
     """Get current escalation rules and thresholds."""
     try:
@@ -176,7 +176,7 @@ def get_escalation_rules():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/escalation/{escalation_id}")
+@router.get("/{escalation_id}")
 def get_escalation_details(escalation_id: str):
     """Get details of a specific escalation event."""
     try:

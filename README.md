@@ -58,7 +58,9 @@ Hospital Pulse AI
 
 * **No-Show Predis an AI-powered hospital operations decision-support platform that forecasts Emergency Department load, ICU demand, and staff workload. It provides early warnings, interpretable risk scores, and actionable recommendations to help hospital administrators prepare in advance and prevent overload situations.
 
----iction**
+---
+
+* **data prediction**
   - Machine learning model trained on KaggleV2 dataset
   - Probability-based no-show risk assessment
   - Interpretable feature importance analysis
@@ -148,6 +150,7 @@ Hospital Pulse AI
 cd backend
 pip install -r requirements.txt
 python main.py
+python -m uvicorn main:app --reload --port 8000
 ```
 
 ### Frontend Setup

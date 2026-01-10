@@ -54,7 +54,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
 
 const EscalationWorkflows = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -70,12 +70,23 @@ const EscalationWorkflows = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${API_BASE}/escalation/dashboard`);
-      setDashboardData(response.data.data);
-      setActiveEscalations(response.data.data.active_escalations || []);
+      console.log('Escalation dashboard response:', response.data);
+      if (response.data && response.data.data) {
+        setDashboardData(response.data.data);
+        setActiveEscalations(response.data.data.active_escalations || []);
+      } else {
+        setDashboardData(null);
+        setActiveEscalations([]);
+        setError('No dashboard data available');
+      }
     } catch (err) {
+      console.error('Error fetching dashboard data:', err);
       setError('Failed to fetch dashboard data');
+      setDashboardData(null);
+      setActiveEscalations([]);
     } finally {
       setLoading(false);
     }
@@ -243,7 +254,7 @@ const EscalationWorkflows = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {activeEscalations.map((escalation) => (
+                {activeEscalations && Array.isArray(activeEscalations) && activeEscalations.map((escalation) => (
                   <TableRow key={escalation.escalation_id}>
                     <TableCell>
                       <Box display="flex" alignItems="center">
@@ -331,7 +342,7 @@ const EscalationWorkflows = () => {
   const renderEscalationTrends = () => {
     if (!dashboardData?.escalation_trends) return null;
 
-    const data = Object.entries(dashboardData.escalation_trends.daily_counts || {})
+    const data = Object.entries(dashboardData?.escalation_trends?.daily_counts || {})
       .map(([date, count]) => ({
         date: new Date(date).toLocaleDateString(),
         count

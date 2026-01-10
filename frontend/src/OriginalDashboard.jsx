@@ -14,6 +14,7 @@ import {
   Paper,
   Alert as MuiAlert,
   Button,
+  Typography,
 } from '@mui/material'
 import Box from '@mui/material/Box'
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline'
@@ -38,7 +39,7 @@ import {
 } from 'recharts'
 import SectionCard from './components/SectionCard'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001'
 
 const formatTS = (ts) => new Date(ts).toLocaleString([], { hour: '2-digit', minute: '2-digit', weekday: 'short' })
 
@@ -93,18 +94,52 @@ function AlertList({ alerts }) {
 }
 
 function Recommendations({ items }) {
+  // Normalize items to ensure it's always an array
+  const normalizedItems = React.useMemo(() => {
+    // Handle different API response structures
+    if (Array.isArray(items)) {
+      return items;
+    }
+    
+    // Handle wrapped structure like { recommendations: [...] }
+    if (items && typeof items === 'object' && items.recommendations && Array.isArray(items.recommendations)) {
+      return items.recommendations;
+    }
+    
+    // Handle null/undefined or other invalid types
+    return [];
+  }, [items]);
+
+  // Show empty state when no recommendations
+  if (normalizedItems.length === 0) {
+    return (
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No recommendations available at the moment.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <List dense>
-      {items.map((r, idx) => (
-        <ListItem key={idx}>
-          <ListItemIcon>
-            <ShieldIcon color="info" />
-          </ListItemIcon>
-          <ListItemText primary={r} />
-        </ListItem>
-      ))}
+      {normalizedItems.map((item, idx) => {
+        // Handle both string and object recommendation formats
+        const recommendationText = typeof item === 'string' ? item : item?.action || 'Unknown recommendation';
+        return (
+          <ListItem key={idx}>
+            <ListItemIcon>
+              <ShieldIcon color="info" />
+            </ListItemIcon>
+            <ListItemText 
+              primary={recommendationText}
+              secondary={item?.rationale && typeof item === 'object' ? item.rationale : undefined}
+            />
+          </ListItem>
+        );
+      })}
     </List>
-  )
+  );
 }
 
 function LineSection({ data, dataKey, color }) {
@@ -178,7 +213,7 @@ export default function OriginalDashboard() {
       setStaffSummary(staffRes.data.summary)
       setAlerts(alertsRes.data)
       setAlertsSummary(alertsRes.data.summary)
-      setRecs(recsRes.data)
+      setRecs(recsRes.data?.recommendations || []) // Extract recommendations array from response
       setRecsSummary(recsRes.data.summary)
       setSewi(sewiRes.data)
     } catch (e) {

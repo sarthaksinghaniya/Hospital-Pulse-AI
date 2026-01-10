@@ -27,7 +27,7 @@ class AdherenceTrendsRequest(BaseModel):
     patient_id: str
     days_back: int = 30
 
-@router.get("/adherence/population-overview")
+@router.get("/population-overview")
 def get_population_adherence_overview():
     """Get adherence overview for all patients."""
     try:
@@ -39,7 +39,7 @@ def get_population_adherence_overview():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/adherence/score")
+@router.post("/score")
 def compute_adherence_score(request: AdherenceScoreRequest):
     """Compute comprehensive adherence score for a patient."""
     try:
@@ -51,7 +51,7 @@ def compute_adherence_score(request: AdherenceScoreRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/adherence/nudge")
+@router.post("/nudge")
 def generate_personalized_nudge(request: PersonalizedNudgeRequest):
     """Generate personalized nudge based on adherence score."""
     try:
@@ -75,7 +75,7 @@ def generate_personalized_nudge(request: PersonalizedNudgeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/adherence/trends")
+@router.post("/trends")
 def track_adherence_trends(request: AdherenceTrendsRequest):
     """Track adherence trends over time for a patient."""
     try:
@@ -90,7 +90,7 @@ def track_adherence_trends(request: AdherenceTrendsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/adherence/insights")
+@router.post("/insights")
 def get_adherence_insights(request: AdherenceScoreRequest):
     """Get comprehensive adherence insights for a patient."""
     try:
@@ -102,7 +102,7 @@ def get_adherence_insights(request: AdherenceScoreRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/adherence/nudge-history")
+@router.get("/nudge-history")
 def get_nudge_history(patient_id: Optional[str] = Query(None)):
     """Get nudge history for a patient or all patients."""
     try:

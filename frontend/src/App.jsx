@@ -18,6 +18,8 @@ import {
   Warning as EscalationIcon
 } from '@mui/icons-material';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
+
 // Import all components
 import VitalsMonitoring from './components/VitalsMonitoring';
 import AdherenceNudging from './components/AdherenceNudging';

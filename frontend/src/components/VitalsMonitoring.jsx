@@ -37,7 +37,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
 
 const VitalsMonitoring = () => {
   const [overview, setOverview] = useState([]);
@@ -48,11 +48,20 @@ const VitalsMonitoring = () => {
 
   const fetchOverview = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${API_BASE}/vitals/overview`);
-      setOverview(response.data.data || []);
+      console.log('Vitals overview response:', response.data);
+      if (response.data && response.data.data) {
+        setOverview(response.data.data);
+      } else {
+        setOverview([]);
+        setError('No patient data available');
+      }
     } catch (err) {
+      console.error('Error fetching vitals overview:', err);
       setError('Failed to fetch vitals overview');
+      setOverview([]);
     } finally {
       setLoading(false);
     }
@@ -111,7 +120,7 @@ const VitalsMonitoring = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {overview.map((patient) => (
+                {overview && Array.isArray(overview) && overview.map((patient) => (
                   <TableRow key={patient.patient_id}>
                     <TableCell>
                       <Box display="flex" alignItems="center">
