@@ -15,7 +15,8 @@ import {
   NotificationsActive as AdherenceIcon,
   Analytics as NoShowIcon,
   Assessment as RiskIcon,
-  Warning as EscalationIcon
+  Warning as EscalationIcon,
+  SmartToy as ChatbotIcon
 } from '@mui/icons-material';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
@@ -27,6 +28,7 @@ import NoShowPrediction from './components/NoShowPrediction';
 import DeteriorationRisk from './components/DeteriorationRisk';
 import EscalationWorkflows from './components/EscalationWorkflows';
 import OriginalDashboard from './OriginalDashboard';
+import HopXChatbot from './components/HopXChatbot';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -55,7 +57,8 @@ export default function App() {
     { label: 'Adherence Nudging', icon: <AdherenceIcon />, component: <AdherenceNudging /> },
     { label: 'No-Show Prediction', icon: <NoShowIcon />, component: <NoShowPrediction /> },
     { label: 'Risk Assessment', icon: <RiskIcon />, component: <DeteriorationRisk /> },
-    { label: 'Escalations', icon: <EscalationIcon />, component: <EscalationWorkflows /> }
+    { label: 'Escalations', icon: <EscalationIcon />, component: <EscalationWorkflows /> },
+    { label: 'HopX Assistant', icon: <ChatbotIcon />, component: <HopXChatbot /> }
   ];
 
   return (

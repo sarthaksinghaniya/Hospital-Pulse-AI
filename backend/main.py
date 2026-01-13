@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation
+from routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
 from services.synthetic_data import ensure_synthetic_dataset
 from services.model_service import ModelService
 from services.model_registry import set_model_service
@@ -60,6 +60,7 @@ app.include_router(adherence.router, prefix="/adherence", tags=["adherence"], de
 app.include_router(noshow.router, prefix="/noshow", tags=["noshow"], dependencies=[])
 app.include_router(deterioration_risk.router, prefix="/risk", tags=["risk"], dependencies=[])
 app.include_router(escalation.router, prefix="/escalation", tags=["escalation"], dependencies=[])
+app.include_router(chatbot.router, prefix="/chatbot", tags=["chatbot"], dependencies=[])
 
 
 @app.on_event("startup")
