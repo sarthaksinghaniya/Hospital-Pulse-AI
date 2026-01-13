@@ -59,13 +59,15 @@ def check_escalation_triggers(request: EscalationTriggerRequest):
             )
             created_escalations.append(escalation)
         
+        # Convert numpy types for JSON serialization
+        from services.escalation_workflows import convert_numpy_types
         return {
             "status": "success",
-            "data": {
+            "data": convert_numpy_types({
                 "triggers": triggers,
                 "created_escalations": created_escalations,
                 "total_escalations": len(created_escalations)
-            }
+            })
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
