@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
 from services.synthetic_data import ensure_synthetic_dataset
@@ -69,6 +70,11 @@ async def startup_event():
     service = ModelService()
     set_model_service(service)
 
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Return empty response for favicon to prevent 404 errors"""
+    return {"message": "No favicon"}
 
 @app.get("/health")
 def health_check():
