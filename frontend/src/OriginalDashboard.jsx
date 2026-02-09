@@ -39,7 +39,7 @@ import {
 } from 'recharts'
 import SectionCard from './components/SectionCard'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 const formatTS = (ts) => new Date(ts).toLocaleString([], { hour: '2-digit', minute: '2-digit', weekday: 'short' })
 
@@ -157,9 +157,27 @@ function LineSection({ data, dataKey, color }) {
 }
 
 function HeatBar({ data, color }) {
+  // Filter out any data with NaN or invalid values
+  const validData = data?.filter(item => 
+    item && 
+    typeof item.risk === 'number' && 
+    !isNaN(item.risk) && 
+    item.label
+  ) || [];
+
+  if (validData.length === 0) {
+    return (
+      <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No data available
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={data} layout="horizontal">
+      <BarChart data={validData} layout="horizontal">
         <XAxis type="number" domain={[0, 1]} tickFormatter={(v) => `${Math.round(v * 100)}%`} />
         <YAxis dataKey="label" type="category" width={80} />
         <Tooltip formatter={(v) => `${Math.round(v * 100)}%`} />

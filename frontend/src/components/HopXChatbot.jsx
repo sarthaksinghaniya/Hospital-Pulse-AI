@@ -41,7 +41,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 const HopXChatbot = () => {
   const [messages, setMessages] = useState([]);

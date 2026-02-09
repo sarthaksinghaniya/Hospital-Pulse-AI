@@ -47,7 +47,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8001';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 const AdherenceNudging = () => {
   const [populationOverview, setPopulationOverview] = useState(null);
