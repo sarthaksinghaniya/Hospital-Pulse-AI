@@ -13,7 +13,7 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import uuid
-from enum import Enum
+from enum import Enuma
 
 class MessageType(Enum):
     SYSTEM_INFO = "system_info"
