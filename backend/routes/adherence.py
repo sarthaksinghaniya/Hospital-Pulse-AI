@@ -5,13 +5,7 @@ API Routes for Adherence Nudging
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
 from pydantic import BaseModel
-import sys
-import os
-
-# Add the services directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
-
-from services.adherence_nudging import AdherenceNudgingService
+from backend.services.adherence_nudging import AdherenceNudgingService
 
 router = APIRouter()
 adherence_service = AdherenceNudgingService()

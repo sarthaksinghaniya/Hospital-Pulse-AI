@@ -4,15 +4,10 @@ API Routes for Human Escalation Workflows
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
-from pydantic import BaseModel
-import sys
-import os
+from pydantic import BaseModel, Field
 
-# Add the services directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
-
-from services.escalation_workflows import HumanEscalationService
-from services.deterioration_risk import PatientDeteriorationRiskService
+from backend.services.escalation_workflows import HumanEscalationService
+from backend.services.deterioration_risk import PatientDeteriorationRiskService
 
 router = APIRouter()
 escalation_service = HumanEscalationService()
@@ -32,12 +27,13 @@ class EscalationResolveRequest(BaseModel):
     escalation_id: str
     resolved_by: str
     resolution_notes: str
-    follow_up_required: bool = False
+    follow_up_required: bool = Field(False, description="Whether follow-up is required")
 
 class EscalationReportRequest(BaseModel):
     patient_id: Optional[str] = None
     start_date: Optional[str] = None
     end_date: Optional[str] = None
+
 
 @router.post("/check-triggers")
 def check_escalation_triggers(request: EscalationTriggerRequest):
@@ -60,7 +56,7 @@ def check_escalation_triggers(request: EscalationTriggerRequest):
             created_escalations.append(escalation)
         
         # Convert numpy types for JSON serialization
-        from services.escalation_workflows import convert_numpy_types
+        from backend.services.escalation_workflows import convert_numpy_types
         return {
             "status": "success",
             "data": convert_numpy_types({

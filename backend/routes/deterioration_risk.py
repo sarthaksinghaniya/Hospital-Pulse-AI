@@ -5,16 +5,10 @@ API Routes for Patient Deterioration Risk Assessment
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
 from pydantic import BaseModel
-import sys
-import os
-
-# Add the services directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
-
-from services.deterioration_risk import PatientDeteriorationRiskService
-from services.vitals_monitoring import VitalsMonitoringService
-from services.adherence_nudging import AdherenceNudgingService
-from services.no_show_prediction import NoShowPredictionService
+from backend.services.deterioration_risk import PatientDeteriorationRiskService
+from backend.services.vitals_monitoring import VitalsMonitoringService
+from backend.services.adherence_nudging import AdherenceNudgingService
+from backend.services.no_show_prediction import NoShowPredictionService
 
 router = APIRouter()
 risk_service = PatientDeteriorationRiskService()

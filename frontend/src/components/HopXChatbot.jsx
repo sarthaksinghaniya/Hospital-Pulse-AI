@@ -41,7 +41,8 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+const WS_BASE = import.meta.env.VITE_WS_BASE || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
 
 const HopXChatbot = () => {
   const [messages, setMessages] = useState([]);
@@ -74,11 +75,12 @@ const HopXChatbot = () => {
 
   const connectWebSocket = () => {
     try {
-      ws.current = new WebSocket(`${API_BASE}/chatbot/ws`);
+      ws.current = new WebSocket(`${WS_BASE}/chatbot/ws`);
       
       ws.current.onopen = () => {
         setIsConnected(true);
         console.log('HopX Assistant connected');
+
       };
       
       ws.current.onmessage = (event) => {
@@ -141,6 +143,12 @@ const HopXChatbot = () => {
       setActiveFeatures(featuresResponse.data.data.active_features);
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
+      // trying ping endpoint as a simple check for API reachability
+      try {
+        await axios.get(`${API_BASE}/chatbot/ping`);
+      } catch (pingError) {
+        console.error('Backend ping failed:', pingError);
+      }
     }
   };
 

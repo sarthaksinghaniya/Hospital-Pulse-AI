@@ -1,15 +1,16 @@
 from pathlib import Path
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
-from services.synthetic_data import ensure_synthetic_dataset
-from services.model_service import ModelService
-from services.model_registry import set_model_service
+from backend.routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
+from backend.services.synthetic_data import ensure_synthetic_dataset
+from backend.services.model_service import ModelService
+from backend.services.model_registry import set_model_service
 
 ENV_PATH = Path(__file__).resolve().parents[1] / "env" / ".env"
 load_dotenv(ENV_PATH)
@@ -49,7 +50,7 @@ app.add_middleware(
     ],
 )
 
-model_service: ModelService | None = None
+model_service: Optional[ModelService] = None
 
 # Include routers AFTER CORS middleware
 app.include_router(predictions.router, prefix="/predict", tags=["predictions"], dependencies=[])

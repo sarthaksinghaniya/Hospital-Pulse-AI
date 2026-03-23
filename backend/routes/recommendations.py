@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from models.schemas import RecommendationsResponse
-from services.model_registry import get_model_service
-from services.model_service import ModelService
+from backend.models.schemas import RecommendationsResponse
+from backend.services.model_registry import get_model_service
+from backend.services.model_service import ModelService
 
 router = APIRouter()
 

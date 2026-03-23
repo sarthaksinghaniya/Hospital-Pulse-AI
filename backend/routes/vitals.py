@@ -5,14 +5,9 @@ API Routes for Remote Vitals Monitoring
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
 from pydantic import BaseModel
-import sys
-import os
+from backend.services.vitals_monitoring import VitalsMonitoringService
+
 import json
-
-# Add the services directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
-
-from services.vitals_monitoring import VitalsMonitoringService
 
 router = APIRouter()
 vitals_service = VitalsMonitoringService()

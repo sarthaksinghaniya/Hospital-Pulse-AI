@@ -4,32 +4,27 @@ API Routes for No-Show Prediction
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
-from pydantic import BaseModel
-import sys
-import os
+from pydantic import BaseModel, Field
 
-# Add the services directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
-
-from services.no_show_prediction import NoShowPredictionService
+from backend.services.no_show_prediction import NoShowPredictionService
 
 router = APIRouter()
 no_show_service = NoShowPredictionService()
 
 class PatientDataRequest(BaseModel):
     patient_id: str
-    Age: int
+    Age: int = Field(..., ge=0, le=150)
     Gender: str
-    waiting_days: int = 1
-    scheduled_hour: int = 10
-    scheduled_dayofweek: int = 0
-    appointment_dayofweek: int = 0
-    SMS_received: int = 1
-    Scholarship: int = 0
-    Hipertension: int = 0
-    Diabetes: int = 0
-    Alcoholism: int = 0
-    Handcap: int = 0
+    waiting_days: int = Field(1, ge=0)
+    scheduled_hour: int = Field(10, ge=0, le=23)
+    scheduled_dayofweek: int = Field(0, ge=0, le=6)
+    appointment_dayofweek: int = Field(0, ge=0, le=6)
+    SMS_received: int = Field(1, ge=0, le=1)
+    Scholarship: int = Field(0, ge=0, le=1)
+    Hipertension: int = Field(0, ge=0, le=1)
+    Diabetes: int = Field(0, ge=0, le=1)
+    Alcoholism: int = Field(0, ge=0, le=1)
+    Handcap: int = Field(0, ge=0, le=1)
 
 class BatchPredictionRequest(BaseModel):
     patients: List[PatientDataRequest]

@@ -153,6 +153,19 @@ python main.py
 python -m uvicorn main:app --reload --port 8000
 ```
 
+### OpenAI API Key configuration (for chatbot/LLM)
+1. Create `.env` in `backend/env/.env` (already present in repo template).
+2. Add your key as:
+
+```ini
+OPENAI_API_KEY=sk-... (your key)
+OPENAI_MODEL=gpt-4o-mini
+```
+
+3. Restart backend server.
+
+> Security note: do NOT commit your `OPENAI_API_KEY` into git. Keep it local.
+
 ### Frontend Setup
 ```bash
 cd frontend

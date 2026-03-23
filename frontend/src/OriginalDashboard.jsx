@@ -248,12 +248,17 @@ export default function OriginalDashboard() {
     setChatMessages((prev) => [...prev, userMsg])
     setChatInput('')
     try {
-      const res = await axios.post(`${API_BASE}/feature/chat`, { query: chatInput, context: 'dashboard' })
-      setChatMessages((prev) => [...prev, { from: 'HOPX', text: res.data.response }])
-    } catch {
+      // Use the correct backend endpoint for HOPX chat model
+      const res = await axios.post(`${API_BASE}/feature/hopx-chat`, { message: chatInput })
+      setChatMessages((prev) => [...prev, { from: 'HOPX', text: res.data.reply }])
+    } catch (error) {
+      console.error('Chatbot query error:', error)
       setChatMessages((prev) => [
         ...prev,
-        { from: 'HOPX', text: "Sorry, I couldn't process that. Try asking about SEWI, forecasts, or recommendations." },
+        {
+          from: 'HOPX',
+          text: "Sorry, I couldn't process that. Try asking about SEWI, forecasts, or recommendations, or type /help.",
+        },
       ])
     }
   }

@@ -14,7 +14,7 @@ import json
 import asyncio
 from datetime import datetime
 
-from services.chatbot_feed import chatbot_service, ChatMessage, MessageType
+from backend.services.chatbot_feed import chatbot_service, ChatMessage, MessageType
 
 router = APIRouter()
 
@@ -124,6 +124,15 @@ async def get_chatbot_feed(limit: int = 50, message_type: Optional[str] = None):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/ping")
+async def ping():
+    """Simple health check endpoint for programmatic checks."""
+    try:
+        return {"status": "ok", "message": "chatbot route is reachable"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/status")
 async def get_system_status():
