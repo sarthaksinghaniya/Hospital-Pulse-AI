@@ -279,6 +279,64 @@ python -m backend.main
 
 ---
 
+## 🚀 Deployment
+
+### Quick Start (Production)
+
+```bash
+# 1. Clone and configure
+git clone <repository-url>
+cd Hospital-Pulse-AI
+cp backend/env/.env.example backend/env/.env
+# Edit .env with your production values
+
+# 2. Deploy with Docker Compose
+docker-compose -f docker-compose.prod.yml up -d
+
+# 3. Verify deployment
+curl http://localhost:8000/health
+```
+
+### Deployment Options
+
+#### 🐳 Docker Compose (Recommended)
+- **Production Config**: `docker-compose.prod.yml`
+- **Multi-service**: Backend + Frontend + Nginx
+- **Health Checks**: Automated monitoring
+- **SSL Ready**: Configure with your domain
+
+#### 🛠️ Manual Deployment
+- **Backend**: FastAPI with Uvicorn workers
+- **Frontend**: Static files served by Nginx
+- **Database**: PostgreSQL/SQLite support
+
+### Environment Configuration
+
+```bash
+# Required for production
+PROD_CORS_ORIGINS=https://yourdomain.com
+# OPENAI_API_KEY=your-api-key (optional)
+
+# Optional settings
+DATABASE_URL=postgresql://...
+MAX_WORKERS=4
+RATE_LIMIT_PER_MINUTE=100
+```
+
+### 📋 Production Checklist
+
+- [ ] Environment variables configured
+- [ ] SSL certificates installed  
+- [ ] Domain DNS configured
+- [ ] Firewall rules set
+- [ ] Health checks enabled
+- [ ] Backup strategy implemented
+- [ ] Monitoring configured
+
+**📖 Full Guide**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions
+
+---
+
 ## Ethical Considerations
 
 * No patient-level or identifiable data
