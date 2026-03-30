@@ -119,11 +119,27 @@ const NoShowPrediction = () => {
 
   const predictNoShow = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await axios.post(`${API_BASE}/noshow/predict`, patientData);
-      setPrediction(response.data.data);
+      console.log('DEBUG: Prediction response:', response.data);
+      
+      // Ensure the response has the expected structure
+      const predictionData = response.data.data;
+      if (predictionData) {
+        // Set default values for missing properties
+        setPrediction({
+          no_show_probability: predictionData.no_show_probability || 0,
+          risk_category: predictionData.risk_category || 'Low',
+          contributing_factors: predictionData.contributing_factors || [],
+          recommendations: predictionData.recommendations || []
+        });
+      } else {
+        setError('Invalid prediction response from server');
+      }
     } catch (err) {
-      setError('Failed to predict no-show');
+      console.error('DEBUG: Prediction error:', err);
+      setError('Failed to predict no-show: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
@@ -430,12 +446,12 @@ const NoShowPrediction = () => {
               <Grid item xs={12} md={4}>
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h6">No-Show Probability</Typography>
-                  <Typography variant="h3" color={getRiskColor(prediction.risk_category)}>
-                    {(prediction.no_show_probability * 100).toFixed(1)}%
+                  <Typography variant="h3" color={getRiskColor(prediction.risk_category || 'low')}>
+                    {prediction.no_show_probability ? (prediction.no_show_probability * 100).toFixed(1) : '0'}%
                   </Typography>
                   <Chip
-                    label={prediction.risk_category}
-                    color={getRiskColor(prediction.risk_category)}
+                    label={prediction.risk_category || 'Unknown'}
+                    color={getRiskColor(prediction.risk_category || 'low')}
                     sx={{ mt: 1 }}
                   />
                 </Paper>
@@ -444,14 +460,20 @@ const NoShowPrediction = () => {
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Contributing Factors</Typography>
                   <List dense>
-                    {prediction.contributing_factors.map((factor, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={factor.factor}
-                          secondary={`Importance: ${(factor.importance * 100).toFixed(1)}%`}
-                        />
+                    {prediction.contributing_factors && prediction.contributing_factors.length > 0 ? (
+                      prediction.contributing_factors.map((factor, index) => (
+                        <ListItem key={index}>
+                          <ListItemText
+                            primary={factor.factor}
+                            secondary={`Importance: ${(factor.importance * 100).toFixed(1)}%`}
+                          />
+                        </ListItem>
+                      ))
+                    ) : (
+                      <ListItem>
+                        <ListItemText primary="No contributing factors available" />
                       </ListItem>
-                    ))}
+                    )}
                   </List>
                 </Paper>
               </Grid>
@@ -459,14 +481,20 @@ const NoShowPrediction = () => {
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Recommendations</Typography>
                   <List dense>
-                    {prediction.recommendations.map((rec, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
-                          <Schedule />
-                        </ListItemIcon>
-                        <ListItemText primary={rec} />
+                    {prediction.recommendations && prediction.recommendations.length > 0 ? (
+                      prediction.recommendations.map((rec, index) => (
+                        <ListItem key={index}>
+                          <ListItemIcon>
+                            <Schedule />
+                          </ListItemIcon>
+                          <ListItemText primary={rec} />
+                        </ListItem>
+                      ))
+                    ) : (
+                      <ListItem>
+                        <ListItemText primary="No recommendations available" />
                       </ListItem>
-                    ))}
+                    )}
                   </List>
                 </Paper>
               </Grid>
