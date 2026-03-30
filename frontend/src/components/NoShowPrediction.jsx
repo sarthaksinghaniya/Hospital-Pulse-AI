@@ -69,31 +69,48 @@ const NoShowPrediction = () => {
 
   const fetchModelInsights = async () => {
     try {
+      console.log('DEBUG: Fetching model insights...');
       const response = await axios.get(`${API_BASE}/noshow/model-insights`);
+      console.log('DEBUG: Model insights response:', response.data);
       setModelInsights(response.data.data);
     } catch (err) {
+      console.error('DEBUG: Failed to fetch model insights:', err);
       setError('Failed to fetch model insights');
     }
   };
 
   const fetchFeatureImportance = async () => {
     try {
+      console.log('DEBUG: Fetching feature importance...');
       const response = await axios.get(`${API_BASE}/noshow/feature-importance`);
+      console.log('DEBUG: Feature importance response:', response.data);
       setFeatureImportance(response.data.data);
     } catch (err) {
+      console.error('DEBUG: Failed to fetch feature importance:', err);
       setError('Failed to fetch feature importance');
     }
   };
 
   const trainModel = async () => {
     setLoading(true);
+    setError(null);
     try {
+      console.log('DEBUG: Starting model training...');
       const response = await axios.post(`${API_BASE}/noshow/train`);
+      console.log('DEBUG: Train model response:', response.data);
+      
       if (response.data.status === 'success') {
+        console.log('DEBUG: Model training successful, fetching insights...');
+        // Wait a moment for the model to be fully saved
+        await new Promise(resolve => setTimeout(resolve, 500));
         await fetchModelInsights();
         await fetchFeatureImportance();
+      } else {
+        console.error('DEBUG: Model training failed:', response.data);
+        setError('Model training failed');
       }
     } catch (err) {
+      console.error('DEBUG: Train model error:', err);
       setError('Failed to train model');
     } finally {
       setLoading(false);
@@ -188,14 +205,56 @@ const NoShowPrediction = () => {
   );
 
   const renderFeatureImportance = () => {
-    if (!featureImportance || !featureImportance.feature_importance) return null;
+    console.log('DEBUG: Rendering feature importance chart...');
+    console.log('DEBUG: featureImportance state:', featureImportance);
+    
+    if (!featureImportance || !featureImportance.feature_importance) {
+      console.log('DEBUG: No feature importance data available');
+      return (
+        <Card>
+          <CardHeader title="Feature Importance" />
+          <CardContent>
+            <Alert severity="info">
+              No feature importance data available. Please train the model first.
+            </Alert>
+          </CardContent>
+        </Card>
+      );
+    }
 
-    const data = Object.entries(featureImportance.feature_importance)
-      .slice(0, 10)
+    const importanceData = featureImportance.feature_importance;
+    console.log('DEBUG: Raw importance data:', importanceData);
+    
+    // Convert to chart format and sort
+    const data = Object.entries(importanceData)
+      .slice(0, 10)  // Top 10 features
       .map(([feature, importance]) => ({
-        feature: feature.replace(/_/g, ' ').toUpperCase(),
+        feature: feature
+          .replace(/_/g, ' ')
+          .replace(/encoded/g, '')
+          .replace(/([A-Z])/g, ' $1')
+          .trim()
+          .toUpperCase(),
         importance: parseFloat((importance * 100).toFixed(2))
-      }));
+      }))
+      .filter(item => item.importance > 0.01)  // Filter out very small values
+      .sort((a, b) => b.importance - a.importance);  // Sort by importance descending
+
+    console.log('DEBUG: Formatted chart data:', data);
+    
+    if (data.length === 0 || data.every(item => item.importance === 0)) {
+      console.log('DEBUG: All importance values are zero or empty');
+      return (
+        <Card>
+          <CardHeader title="Feature Importance" />
+          <CardContent>
+            <Alert severity="warning">
+              Feature importance values are all zero. Please retrain the model.
+            </Alert>
+          </CardContent>
+        </Card>
+      );
+    }
 
     return (
       <Card>
@@ -205,12 +264,20 @@ const NoShowPrediction = () => {
             <ResponsiveContainer width="100%" height="100%">
               <RechartsBarChart data={data} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="feature" type="category" width={150} />
-                <Tooltip />
+                <XAxis type="number" domain={[0, 'dataMax']} />
+                <YAxis dataKey="feature" type="category" width={120} />
+                <Tooltip 
+                  formatter={(value) => [`${value}%`, 'Importance']}
+                  labelFormatter={(label) => `Feature: ${label}`}
+                />
                 <Bar dataKey="importance" fill="#8884d8" />
               </RechartsBarChart>
             </ResponsiveContainer>
+          </Box>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Showing top {data.length} features by importance
+            </Typography>
           </Box>
         </CardContent>
       </Card>

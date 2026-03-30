@@ -169,12 +169,12 @@ pip install -r requirements.txt
 # Start the backend server
 python main.py
 # OR use uvicorn for development:
-python -m uvicorn main:app --reload --port 8001
+python -m uvicorn main:app --reload --port 8000
 ```
 
-**Backend will be available at:** `http://localhost:8001`
+**Backend will be available at:** `http://localhost:8000`
 
-**API Documentation:** `http://localhost:8001/docs` (Swagger UI)
+**API Documentation:** `http://localhost:8000/docs` (Swagger UI)
 
 ### OpenAI API Key configuration (for chatbot/LLM)
 1. Create `.env` in `backend/env/.env` (already present in repo template).
@@ -210,7 +210,7 @@ This will start both backend and frontend services simultaneously.
 
 ## Usage
 
-1. **Start the backend server** on `http://localhost:8001`
+1. **Start the backend server** on `http://localhost:8000`
 2. **Start the frontend** on `http://localhost:5173`
 3. **Navigate between features** using the tab navigation:
    - Dashboard: Original hospital operations view
@@ -259,7 +259,7 @@ python -m backend.main
 - Run tests with: `python -m pytest --tb=short`
 
 **4. Frontend cannot connect to backend**
-- Verify backend is running on port 8001
+- Verify backend is running on port 8000
 - Check CORS configuration in `main.py`
 - Ensure no firewall is blocking the connection
 
@@ -269,13 +269,13 @@ python -m backend.main
 - Never commit API keys to version control
 
 **6. Port conflicts**
-- Backend default port: 8001
+- Backend default port: 8000
 - Frontend default port: 5173
 - Change ports if needed by modifying startup commands
 
 ### Getting Help
 
-1. Check the [API Documentation](http://localhost:8001/docs) when backend is running
+1. Check the [API Documentation](http://localhost:8000/docs) when backend is running
 2. Review the test files for usage examples
 3. Check the `doc/` directory for detailed feature documentation
 4. Ensure all dependencies are installed correctly

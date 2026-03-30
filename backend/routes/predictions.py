@@ -3,14 +3,22 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.models.schemas import EmergencyPrediction, ICUPrediction, PredictionRequest, StaffPrediction, TimeSeriesPoint
-from backend.services.model_registry import get_model_service
+from backend.services.model_registry import get_model_service, set_model_service
 from backend.services.model_service import ModelService
+from backend.services.synthetic_data import ensure_synthetic_dataset
 
 router = APIRouter()
 
 
 def get_service() -> ModelService:
-    return get_model_service()
+    try:
+        return get_model_service()
+    except RuntimeError:
+        # Auto-initialize if not already done
+        ensure_synthetic_dataset()
+        service = ModelService()
+        set_model_service(service)
+        return service
 
 
 @router.post("/emergency", response_model=EmergencyPrediction)

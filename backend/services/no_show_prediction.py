@@ -196,10 +196,23 @@ class NoShowPredictionService:
             accuracy = accuracy_score(y_test, y_pred)
             auc_score = roc_auc_score(y_test, y_pred_proba)
             
-            # Feature importance
+            # Feature importance extraction and normalization
             feature_importance_dict = dict(zip(X.columns, self.model.feature_importances_))
+            
+            # Normalize feature importance to sum to 1
+            importances = np.array(list(feature_importance_dict.values()))
+            if np.sum(importances) > 0:
+                normalized_importances = importances / np.sum(importances)
+                feature_importance_dict = dict(zip(feature_importance_dict.keys(), normalized_importances))
+            
+            # Sort by importance (descending)
             sorted_importance = sorted(feature_importance_dict.items(), key=lambda x: x[1], reverse=True)
             self.feature_importance = dict(sorted_importance)
+            
+            # Debug logging
+            print(f"DEBUG: Feature importance extracted: {self.feature_importance}")
+            print(f"DEBUG: Top 3 features: {list(self.feature_importance.keys())[:3]}")
+            print(f"DEBUG: Sum of importance: {np.sum(list(self.feature_importance.values()))}")
             
             # Generate classification report
             class_report = classification_report(y_test, y_pred, output_dict=True)
@@ -399,7 +412,12 @@ class NoShowPredictionService:
             joblib.dump(self.label_encoders, model_path / "no_show_encoders.pkl")
             joblib.dump(self.feature_columns, model_path / "no_show_features.pkl")
             
+            # Save feature importance separately
+            joblib.dump(self.feature_importance, model_path / "feature_importance.pkl")
+            
             self.last_trained = datetime.now().isoformat()
+            
+            print(f"DEBUG: Model and feature importance saved successfully")
             
         except Exception as e:
             print(f"Error saving model: {e}")
@@ -417,6 +435,11 @@ class NoShowPredictionService:
             importance_path = model_path / "feature_importance.pkl"
             if importance_path.exists():
                 self.feature_importance = joblib.load(importance_path)
+                print(f"DEBUG: Feature importance loaded: {len(self.feature_importance)} features")
+                print(f"DEBUG: Top 3 loaded features: {list(self.feature_importance.keys())[:3]}")
+            else:
+                print("DEBUG: No feature importance file found, will be empty")
+                self.feature_importance = {}
             
             self.model_trained = True
             
@@ -426,6 +449,7 @@ class NoShowPredictionService:
             }
             
         except Exception as e:
+            print(f"DEBUG: Model loading failed: {str(e)}")
             return {
                 'status': 'error',
                 'message': f'Failed to load model: {str(e)}'
