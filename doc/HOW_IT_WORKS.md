@@ -141,19 +141,37 @@ POST /feature/hopx-chat – HOPX assistant Q&A
 
 GET /health – Service health check
 
-Run Locally
-Backend (FastAPI)
+# Run Locally
+
+## Backend (FastAPI)
+```bash
 cd backend
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
 pip install -r requirements.txt
 # Optional: set OPENAI_API_KEY in backend/env/.env
-python -m uvicorn backend.main:app --reload --port 8000
 
-Frontend (React + Vite)
+# Start the server
+python main.py
+# OR for development:
+python -m uvicorn main:app --reload --port 8001
+```
+
+**Backend URL:** `http://localhost:8001`
+**API Docs:** `http://localhost:8001/docs`
+
+## Frontend (React + Vite)
+```bash
 cd frontend
 npm install
 npm run dev -- --host --port 5173
+```
+
+**Frontend URL:** `http://localhost:5173`
 
 Ethical & Safety Safeguards
 

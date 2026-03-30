@@ -52,7 +52,7 @@ def predict_no_show(request: PatientDataRequest):
                 # Train model if not available
                 no_show_service.train_model()
         
-        patient_data = request.dict()
+        patient_data = request.model_dump()
         prediction = no_show_service.predict_no_show(patient_data)
         
         return {
@@ -73,7 +73,7 @@ def batch_predict_no_show(request: BatchPredictionRequest):
                 # Train model if not available
                 no_show_service.train_model()
         
-        patients_data = [patient.dict() for patient in request.patients]
+        patients_data = [patient.model_dump() for patient in request.patients]
         predictions = no_show_service.batch_predict(patients_data)
         
         return {

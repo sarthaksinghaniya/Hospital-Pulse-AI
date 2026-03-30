@@ -97,25 +97,29 @@ Hospital Pulse AI
 
 ### Hospital Operations
 - `GET /health` - Health check
+- `GET /` - Root endpoint with available endpoints list
 - `POST /predict/emergency` - Emergency department forecast
-- `POST /predict/icu` - ICU capacity prediction
+- `POST /predict/icu` - ICU capacity prediction  
 - `POST /predict/staff` - Staff workload prediction
 - `GET /alerts` - System alerts
 - `GET /recommendations` - AI recommendations
 
-### Patient Monitoring
+### Patient Monitoring & Care Management
 - `GET /vitals/overview` - Patient vitals overview
 - `POST /vitals/patient-summary` - Individual patient vitals summary
-- `POST /vitals/trends` - Vitals trend analysis
-- `POST /vitals/stability` - Stability indicators
 - `GET /adherence/population-overview` - Population adherence metrics
 - `POST /adherence/score` - Individual adherence scoring
-- `POST /adherence/nudge` - Generate personalized nudges
 - `POST /noshow/train` - Train no-show prediction model
 - `POST /noshow/predict` - Predict patient no-show probability
+- `POST /noshow/batch-predict` - Batch predict no-show for multiple patients
 - `POST /risk/assess` - Comprehensive patient risk assessment
 - `GET /escalation/dashboard` - Active escalations dashboard
 - `POST /escalation/check-triggers` - Check and create escalations
+
+### AI Assistant
+- `POST /feature/hopx-chat` - HOPX AI assistant chat
+- `GET /feature/surge-early-warning` - Surge Early-Warning Index (SEWI)
+- `POST /feature/chat` - Alternative endpoint for chat (backward compatibility)
 
 ---
 
@@ -147,11 +151,30 @@ Hospital Pulse AI
 
 ### Backend Setup
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd Hospital-Pulse-AI
+
+# Set up Python environment (recommended)
 cd backend
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Start the backend server
 python main.py
-python -m uvicorn main:app --reload --port 8000
+# OR use uvicorn for development:
+python -m uvicorn main:app --reload --port 8001
 ```
+
+**Backend will be available at:** `http://localhost:8001`
+
+**API Documentation:** `http://localhost:8001/docs` (Swagger UI)
 
 ### OpenAI API Key configuration (for chatbot/LLM)
 1. Create `.env` in `backend/env/.env` (already present in repo template).
@@ -173,16 +196,21 @@ npm install
 npm run dev
 ```
 
+**Frontend will be available at:** `http://localhost:5173`
+
 ### Docker Setup
 ```bash
+# From the root directory
 docker-compose up
 ```
+
+This will start both backend and frontend services simultaneously.
 
 ---
 
 ## Usage
 
-1. **Start the backend server** on `http://localhost:8000`
+1. **Start the backend server** on `http://localhost:8001`
 2. **Start the frontend** on `http://localhost:5173`
 3. **Navigate between features** using the tab navigation:
    - Dashboard: Original hospital operations view
@@ -191,6 +219,66 @@ docker-compose up
    - No-Show Prediction: Appointment risk assessment
    - Risk Assessment: Patient deterioration scoring
    - Escalations: Clinical workflow management
+
+## Testing
+
+Run the backend test suite:
+```bash
+cd backend
+python -m pytest
+```
+
+All tests should pass successfully. The test suite covers:
+- API endpoint functionality
+- Model service initialization
+- Data processing workflows
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Backend fails to start with import errors**
+```bash
+# Ensure you're in the backend directory
+cd backend
+# Try running from parent directory instead
+cd ..
+python -m backend.main
+```
+
+**2. ModuleNotFoundError: No module named 'backend'**
+- This occurs when running from the wrong directory
+- Always run backend from either the `backend/` directory or the project root
+- The Python path is automatically configured in `main.py`
+
+**3. Tests fail with "ModelService not initialized yet"**
+- This was fixed in the latest update
+- Ensure you have the latest version of the test configuration
+- Run tests with: `python -m pytest --tb=short`
+
+**4. Frontend cannot connect to backend**
+- Verify backend is running on port 8001
+- Check CORS configuration in `main.py`
+- Ensure no firewall is blocking the connection
+
+**5. OpenAI API errors**
+- The chatbot works without an API key using rule-based responses
+- For enhanced AI responses, add your OpenAI API key to `backend/env/.env`
+- Never commit API keys to version control
+
+**6. Port conflicts**
+- Backend default port: 8001
+- Frontend default port: 5173
+- Change ports if needed by modifying startup commands
+
+### Getting Help
+
+1. Check the [API Documentation](http://localhost:8001/docs) when backend is running
+2. Review the test files for usage examples
+3. Check the `doc/` directory for detailed feature documentation
+4. Ensure all dependencies are installed correctly
 
 ---
 

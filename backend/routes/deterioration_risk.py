@@ -43,7 +43,7 @@ class RiskTrendsRequest(BaseModel):
 def calculate_overall_risk_score(request: PatientRiskRequest):
     """Calculate comprehensive deterioration risk score for a patient."""
     try:
-        patient_data = request.dict()
+        patient_data = request.model_dump()
         
         # Calculate risk score
         risk_assessment = risk_service.calculate_overall_risk_score(

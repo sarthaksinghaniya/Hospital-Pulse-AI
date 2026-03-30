@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
+import sys
 from typing import Optional
+
+# Add parent directory to Python path to allow imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
