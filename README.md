@@ -279,61 +279,65 @@ python -m backend.main
 
 ---
 
-## 🚀 Deployment
+## 🚀 Production Deployment
 
-### Quick Start (Production)
+### Quick Start (No Docker)
+
+**Backend**: Render.com | **Frontend**: Vercel.com
 
 ```bash
-# 1. Clone and configure
-git clone <repository-url>
-cd Hospital-Pulse-AI
-cp backend/env/.env.example backend/env/.env
-# Edit .env with your production values
+# 1. Deploy Backend to Render
+# Connect repo to Render.com
+# Build: pip install -r requirements.txt
+# Start: uvicorn main:app --host 0.0.0.0 --port $PORT
 
-# 2. Deploy with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
+# 2. Deploy Frontend to Vercel
+# Connect repo to Vercel.com
+# Build: npm run build
+# Set VITE_API_BASE=https://your-backend.onrender.com
 
-# 3. Verify deployment
-curl http://localhost:8000/health
+# 3. Configure CORS
+# In Render: CORS_ORIGINS=https://your-app.vercel.app
 ```
 
-### Deployment Options
+### Deployment Platforms
 
-#### 🐳 Docker Compose (Recommended)
-- **Production Config**: `docker-compose.prod.yml`
-- **Multi-service**: Backend + Frontend + Nginx
-- **Health Checks**: Automated monitoring
-- **SSL Ready**: Configure with your domain
+#### �️ Backend: Render.com
+- **Runtime**: Python 3.9+
+- **Build**: `pip install -r requirements.txt`
+- **Start**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Health**: `/health` endpoint included
+- **CORS**: Configured for your domain
 
-#### 🛠️ Manual Deployment
-- **Backend**: FastAPI with Uvicorn workers
-- **Frontend**: Static files served by Nginx
-- **Database**: PostgreSQL/SQLite support
+#### 🌐 Frontend: Vercel.com
+- **Framework**: Vite (React)
+- **Build**: `npm run build`
+- **Output**: `dist/` directory
+- **Environment**: `VITE_API_BASE` variable
+- **Global CDN**: Automatic
 
 ### Environment Configuration
 
 ```bash
-# Required for production
-PROD_CORS_ORIGINS=https://yourdomain.com
-# OPENAI_API_KEY=your-api-key (optional)
+# Backend (Render)
+CORS_ORIGINS=https://your-domain.vercel.app
+OPENAI_API_KEY=your-key (optional)
+PORT=10000
 
-# Optional settings
-DATABASE_URL=postgresql://...
-MAX_WORKERS=4
-RATE_LIMIT_PER_MINUTE=100
+# Frontend (Vercel)
+VITE_API_BASE=https://your-backend.onrender.com
 ```
 
 ### 📋 Production Checklist
 
-- [ ] Environment variables configured
-- [ ] SSL certificates installed  
-- [ ] Domain DNS configured
-- [ ] Firewall rules set
-- [ ] Health checks enabled
-- [ ] Backup strategy implemented
-- [ ] Monitoring configured
+- [ ] Backend deployed to Render
+- [ ] Frontend deployed to Vercel
+- [ ] CORS origins configured
+- [ ] Environment variables set
+- [ ] Health checks passing
+- [ ] API endpoints tested
 
-**📖 Full Guide**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions
+**📖 Full Guide**: See [DEPLOYMENT-NO-DOCKER.md](./DEPLOYMENT-NO-DOCKER.md)
 
 ---
 

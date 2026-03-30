@@ -91,17 +91,13 @@ Thumbs.db
 # Keep backend/env/.env out of repo
 /backend/env/.env
 
-# Deployment files
-backups/
-*.backup
-deploy.sh
-docker-compose.prod.yml
+# Deployment files (keep templates, ignore actual configs)
+frontend/.env.local
+vercel.json
+DEPLOYMENT-NO-DOCKER.md
 
 # Render
 .render/
-
-# Docker
-.dockerignore
 
 # IDEs
 .vscode/
