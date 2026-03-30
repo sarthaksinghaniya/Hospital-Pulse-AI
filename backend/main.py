@@ -24,34 +24,38 @@ app = FastAPI(title="Hospital Pulse AI", version="0.1.0")
 # Configure CORS for development and production
 def get_cors_origins():
     """Get allowed origins based on environment"""
-    origins = [
-        "http://localhost:5173",  # Vite dev server default
-        "http://localhost:5174",  # Alternative dev port
-        "http://127.0.0.1:5173",  # Localhost alternative
-        "http://127.0.0.1:5174",  # Localhost alternative
-    ]
+    env = os.getenv("ENV", "dev").lower()
     
-    # Add production origins from environment variable
-    prod_origins = os.getenv("CORS_ORIGINS", "")
-    if prod_origins:
-        origins.extend([origin.strip() for origin in prod_origins.split(",")])
+    print(f"🌍 Environment: {env}")
+    
+    if env == "production":
+        # Production origins from environment variable
+        prod_origins = os.getenv("PROD_CORS_ORIGINS", "")
+        origins = [origin.strip() for origin in prod_origins.split(",") if origin.strip()]
+        print(f"🔒 Production CORS Origins: {origins}")
+    else:
+        # Development origins
+        dev_origins = os.getenv("DEV_CORS_ORIGINS", 
+            "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,https://hopx.netlify.app")
+        origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
+        print(f"🛠️ Development CORS Origins: {origins}")
+    
+    # Fallback to allow all if no origins configured
+    if not origins:
+        origins = ["*"]
+        print("⚠️ No origins configured, allowing all origins")
     
     return origins
 
+# Apply CORS middleware
+origins = get_cors_origins()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_cors_origins(),
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=[
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "Accept",
-        "Origin",
-        "Access-Control-Request-Method",
-        "Access-Control-Request-Headers"
-    ],
+    allow_headers=["*"],
 )
 
 model_service: Optional[ModelService] = None
