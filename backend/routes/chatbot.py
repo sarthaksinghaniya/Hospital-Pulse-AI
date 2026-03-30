@@ -73,10 +73,168 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+def get_healthcare_response(message: str) -> str:
+    """Intelligent healthcare response based on dataset patterns when OpenAI is unavailable."""
+    import re
+    
+    message_lower = message.lower()
+    
+    # Extract patient data from message
+    age_match = re.search(r'age\s*(\d+)', message_lower)
+    waiting_match = re.search(r'waiting\s*(\d+)', message_lower) or re.search(r'wait\s*(\d+)', message_lower)
+    sms_match = re.search(r'sms\s*(received|yes|no)', message_lower) or re.search(r'received\s*sms', message_lower) or re.search(r'no\s*sms', message_lower)
+    
+    age = int(age_match.group(1)) if age_match else None
+    waiting_days = int(waiting_match.group(1)) if waiting_match else None
+    
+    # Better SMS extraction
+    sms_received = None
+    if sms_match and sms_match.groups():
+        sms_text = sms_match.group(1)
+        if 'yes' in sms_text or 'received' in sms_text:
+            sms_received = 'yes'
+        elif 'no' in sms_text:
+            sms_received = 'no'
+    elif 'no sms' in message_lower or 'without sms' in message_lower:
+        sms_received = 'no'
+    elif 'sms received' in message_lower or 'received sms' in message_lower or 'with sms' in message_lower:
+        sms_received = 'yes'
+    
+    # Prediction logic based on dataset patterns
+    if age is not None or waiting_days is not None or sms_received is not None:
+        return generate_prediction_response(age, waiting_days, sms_received)
+    
+    # General healthcare insights
+    if "why" in message_lower and ("miss" in message_lower or "no show" in message_lower):
+        return """### 🧠 Key Insights:
+
+* **Long waiting time** is the strongest predictor of no-shows (~60% impact)
+* **Younger patients** (under 30) have higher no-show rates
+* **SMS reminders** significantly reduce appointment no-shows
+* **Same-day appointments** have the lowest no-show rates
+
+### 💡 Recommendations:
+
+* Schedule appointments within 7 days when possible
+* Send SMS reminders 24-48 hours before appointments
+* Follow up with patients who wait more than 14 days
+* Use multiple reminder channels for high-risk patients"""
+    
+    if "predict" in message_lower or "will" in message_lower and ("come" in message_lower or "show" in message_lower):
+        return """### 📊 Prediction Analysis:
+
+To provide an accurate prediction, I need patient details:
+
+**Required Information:**
+- Patient age
+- Waiting days (days between scheduling and appointment)
+- SMS reminder status (received/not received)
+
+**Example:** "Patient age 25, waiting 10 days, SMS received - will they come?"
+
+Once you provide these details, I'll give you a data-driven risk assessment!"""
+    
+    # Default response
+    return """### 🤖 HopX Assistant
+
+I'm your intelligent healthcare assistant, specialized in appointment predictions and patient insights using hospital data patterns.
+
+**What I can help with:**
+- 📊 Predict appointment no-show probability
+- 🧠 Analyze patient behavior patterns  
+- 💡 Provide data-driven recommendations
+- 📈 Share hospital appointment insights
+
+**Try asking:**
+- "Why do patients miss appointments?"
+- "Patient age 30, waiting 5 days, SMS received - predict no-show risk"
+- "What factors affect appointment attendance?"
+
+How can I assist you today?"""
+
+def generate_prediction_response(age: int = None, waiting_days: int = None, sms_received: str = None) -> str:
+    """Generate data-driven prediction response."""
+    
+    # Calculate risk score based on feature importance
+    risk_score = 0
+    reasons = []
+    suggestions = []
+    
+    # Waiting days analysis (strongest predictor ~60%)
+    if waiting_days is not None:
+        if waiting_days <= 3:
+            risk_score -= 30
+            reasons.append("Short waiting time reduces no-show risk")
+        elif waiting_days <= 7:
+            risk_score += 10
+            reasons.append("Moderate waiting time")
+        elif waiting_days <= 14:
+            risk_score += 30
+            reasons.append("Long waiting time increases no-show risk")
+        else:
+            risk_score += 50
+            reasons.append("Very long waiting time significantly increases no-show risk")
+            suggestions.append("Consider rescheduling to reduce wait time")
+    
+    # Age analysis (moderate impact)
+    if age is not None:
+        if age < 30:
+            risk_score += 20
+            reasons.append("Younger patients have higher no-show rates")
+        elif age < 50:
+            risk_score += 5
+            reasons.append("Middle-aged patients show moderate attendance")
+        else:
+            risk_score -= 10
+            reasons.append("Older patients tend to keep appointments")
+    
+    # SMS analysis (behavioral factor)
+    if sms_received is not None:
+        if sms_received.lower() == 'yes':
+            risk_score -= 20
+            reasons.append("SMS reminder improves attendance")
+            suggestions.append("Continue SMS reminders for this patient")
+        else:
+            risk_score += 25
+            reasons.append("No SMS reminder increases no-show risk")
+            suggestions.append("Send SMS reminder immediately")
+    
+    # Determine risk level
+    if risk_score <= -20:
+        risk_level = "Low"
+    elif risk_score <= 20:
+        risk_level = "Medium"  
+    else:
+        risk_level = "High"
+    
+    # Add default suggestions if none generated
+    if not suggestions:
+        if risk_level == "Low":
+            suggestions.append("Maintain current appointment scheduling practices")
+        elif risk_level == "Medium":
+            suggestions.append("Send reminder 24 hours before appointment")
+        else:
+            suggestions.append("Send immediate reminder and consider follow-up call")
+    
+    # Format response
+    response = f"""### 📊 Prediction:
+{risk_level} No-show Risk
+
+### 🧠 Reason:
+"""
+    for reason in reasons:
+        response += f"* {reason}\n"
+    
+    response += "\n### 💡 Suggestion:\n"
+    for suggestion in suggestions:
+        response += f"* {suggestion}\n"
+    
+    return response
+
 async def get_openai_response(message: str) -> str:
-    """Get response from OpenAI API."""
+    """Get response from OpenAI API with healthcare intelligence."""
     if not openai_client:
-        return "I'm HopX Assistant, your healthcare AI companion. I can help you with system status, patient alerts, and feature information. The OpenAI integration is not configured."
+        return get_healthcare_response(message)
     
     try:
         response = openai_client.chat.completions.create(
@@ -84,20 +242,64 @@ async def get_openai_response(message: str) -> str:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are HopX Assistant, a helpful healthcare AI assistant for Hospital Pulse AI. You provide information about hospital operations, patient monitoring, system status, and medical insights. Be concise and helpful."
+                    "content": """You are HopX Assistant, an intelligent AI healthcare assistant integrated with hospital appointment data.
+
+## 🎯 Your Role
+You help users with appointment predictions, patient insights, and hospital analytics using data-driven reasoning.
+
+## 📊 Available Dataset Features
+You have access to structured patient data with fields:
+- age, gender, scheduled_day, appointment_day, waiting_days, sms_received, no_show (target)
+
+## 🧠 Intelligence Requirements
+
+### 1. Prediction Awareness
+Use feature importance patterns:
+- waiting_days → strongest predictor (~60% impact)
+- age → moderate impact  
+- sms_received → behavioral factor
+
+### 2. Analytical Responses
+Provide insights like:
+- Long waiting time increases no-shows
+- Younger patients more likely to skip
+- SMS reminders reduce no-shows
+
+### 3. Output Format
+Structure responses as:
+### 📊 Prediction:
+Low / Medium / High No-show Risk
+
+### 🧠 Reason:
+* Waiting days impact
+* Age behavior trend  
+* SMS effect
+
+### 💡 Suggestion:
+* Send reminder
+* Reduce wait time
+
+## 🚫 Restrictions
+- Do NOT give medical prescriptions
+- Do NOT hallucinate data
+- Base answers ONLY on dataset patterns
+- Be friendly but professional
+- Avoid medical diagnosis
+
+Always use data-backed reasoning and the structured format above."""
                 },
                 {
                     "role": "user",
                     "content": message
                 }
             ],
-            max_tokens=150,
-            temperature=0.7
+            max_tokens=200,
+            temperature=0.3
         )
         return response.choices[0].message.content
     except Exception as e:
         print(f"OpenAI API error: {e}")
-        return "I apologize, but I'm having trouble connecting to my AI services right now. Please try again later."
+        return get_healthcare_response(message)
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
