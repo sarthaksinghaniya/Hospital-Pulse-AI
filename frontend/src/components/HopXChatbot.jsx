@@ -41,8 +41,8 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
-const WS_BASE = import.meta.env.VITE_WS_BASE || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const WS_BASE = import.meta.env.VITE_WS_BASE || 'ws://localhost:8000';
 
 const HopXChatbot = () => {
   const [messages, setMessages] = useState([]);
@@ -75,22 +75,30 @@ const HopXChatbot = () => {
 
   const connectWebSocket = () => {
     try {
+      console.log('Connecting to WebSocket:', `${WS_BASE}/chatbot/ws`);
       ws.current = new WebSocket(`${WS_BASE}/chatbot/ws`);
       
       ws.current.onopen = () => {
         setIsConnected(true);
         console.log('HopX Assistant connected');
-
+        // Send initial ping to test connection
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({ type: 'ping' }));
+        }
       };
       
       ws.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
+        try {
+          const data = JSON.parse(event.data);
+          handleWebSocketMessage(data);
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error, event.data);
+        }
       };
       
-      ws.current.onclose = () => {
+      ws.current.onclose = (event) => {
         setIsConnected(false);
-        console.log('HopX Assistant disconnected');
+        console.log('HopX Assistant disconnected', event.code, event.reason);
         // Attempt to reconnect after 5 seconds
         reconnectTimeout.current = setTimeout(connectWebSocket, 5000);
       };
@@ -98,14 +106,28 @@ const HopXChatbot = () => {
       ws.current.onerror = (error) => {
         console.error('WebSocket error:', error);
         setIsConnected(false);
+        addMessage({
+          type: 'error',
+          content: 'Connection error. Attempting to reconnect...',
+          timestamp: new Date().toISOString(),
+          isBot: true
+        });
       };
     } catch (error) {
       console.error('Failed to connect WebSocket:', error);
       setIsConnected(false);
+      addMessage({
+        type: 'error',
+        content: 'Failed to connect to chatbot. Please check if the backend is running.',
+        timestamp: new Date().toISOString(),
+        isBot: true
+      });
     }
   };
 
   const handleWebSocketMessage = (data) => {
+    console.log('WebSocket message received:', data);
+    
     if (data.type === 'welcome') {
       setSystemStatus(data.data.system_status);
       setActiveFeatures(data.data.active_features);
@@ -115,6 +137,23 @@ const HopXChatbot = () => {
         timestamp: new Date().toISOString(),
         isBot: true
       });
+    } else if (data.type === 'chat_response') {
+      addMessage({
+        type: 'assistant',
+        content: data.data.content,
+        timestamp: data.data.timestamp,
+        isBot: true
+      });
+    } else if (data.type === 'error') {
+      addMessage({
+        type: 'error',
+        content: data.data.message,
+        timestamp: data.data.timestamp,
+        isBot: true
+      });
+    } else if (data.type === 'pong') {
+      // Connection health check - no action needed
+      console.log('WebSocket pong received');
     } else if (data.type === 'update') {
       setMessages(prevMessages => [...data.data.messages, ...prevMessages].slice(0, 50));
       setSystemStatus(data.data.system_health);
@@ -225,25 +264,34 @@ const HopXChatbot = () => {
   };
 
   const handleChatMessage = async (message) => {
-    // Simple chat response logic
-    const responses = {
-      'hello': 'Hello! I am HopX Assistant, your healthcare AI companion. How can I help you today?',
-      'help': 'I can help you with system status, patient alerts, and feature information. Try typing /help for commands.',
-      'status': 'You can check system status by typing /status command.',
-      'alerts': 'For patient alerts, use the /alerts command.',
-      'features': 'To see all active features, type /features command.'
-    };
-    
-    const lowerMessage = message.toLowerCase();
-    const response = responses[lowerMessage] || 
-      'I understand you\'re asking about: "' + message + '". Try using commands like /status, /features, or /alerts for specific information.';
-    
-    addMessage({
-      type: 'chat_response',
-      content: response,
-      timestamp: new Date().toISOString(),
-      isBot: true
-    });
+    // Send message via WebSocket for real-time AI response
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      const chatMessage = {
+        type: 'chat_message',
+        content: message
+      };
+      ws.current.send(JSON.stringify(chatMessage));
+    } else {
+      // Fallback to simple responses if WebSocket is not connected
+      const responses = {
+        'hello': 'Hello! I am HopX Assistant, your healthcare AI companion. How can I help you today?',
+        'help': 'I can help you with system status, patient alerts, and feature information. Try typing /help for commands.',
+        'status': 'You can check system status by typing /status command.',
+        'alerts': 'For patient alerts, use the /alerts command.',
+        'features': 'To see all active features, type /features command.'
+      };
+      
+      const lowerMessage = message.toLowerCase();
+      const response = responses[lowerMessage] || 
+        'I understand you\'re asking about: "' + message + '". Try using commands like /status, /features, or /alerts for specific information.';
+      
+      addMessage({
+        type: 'chat_response',
+        content: response,
+        timestamp: new Date().toISOString(),
+        isBot: true
+      });
+    }
   };
 
   const getMessageIcon = (type) => {

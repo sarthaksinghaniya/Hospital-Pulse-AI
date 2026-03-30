@@ -13,6 +13,22 @@ from typing import List, Dict, Optional
 import json
 import asyncio
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Load environment variables
+from pathlib import Path
+env_path = Path(__file__).parents[2] / "env" / ".env"
+load_dotenv(env_path)
+
+# Initialize OpenAI client
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
+print(f"DEBUG: OpenAI API Key loaded: {'Yes' if OPENAI_API_KEY else 'No'}")
+print(f"DEBUG: OpenAI Model: {OPENAI_MODEL}")
 
 from backend.services.chatbot_feed import chatbot_service, ChatMessage, MessageType
 
@@ -57,9 +73,35 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+async def get_openai_response(message: str) -> str:
+    """Get response from OpenAI API."""
+    if not openai_client:
+        return "I'm HopX Assistant, your healthcare AI companion. I can help you with system status, patient alerts, and feature information. The OpenAI integration is not configured."
+    
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are HopX Assistant, a helpful healthcare AI assistant for Hospital Pulse AI. You provide information about hospital operations, patient monitoring, system status, and medical insights. Be concise and helpful."
+                },
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+            max_tokens=150,
+            temperature=0.7
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"OpenAI API error: {e}")
+        return "I apologize, but I'm having trouble connecting to my AI services right now. Please try again later."
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """Real-time chatbot feed WebSocket endpoint."""
+    """Real-time chatbot WebSocket endpoint with OpenAI integration."""
     await manager.connect(websocket)
     
     try:
@@ -75,10 +117,55 @@ async def websocket_endpoint(websocket: WebSocket):
         }
         await manager.send_personal_message(json.dumps(welcome_msg), websocket)
         
-        # Start broadcasting updates
-        await start_broadcast_updates(websocket)
-        
+        # Listen for messages
+        while True:
+            try:
+                # Receive message from client
+                data = await websocket.receive_text()
+                message_data = json.loads(data)
+                
+                if message_data.get("type") == "chat_message":
+                    user_message = message_data.get("content", "")
+                    if user_message.strip():
+                        # Get AI response
+                        ai_response = await get_openai_response(user_message)
+                        
+                        # Send response back
+                        response_msg = {
+                            "type": "chat_response",
+                            "data": {
+                                "content": ai_response,
+                                "timestamp": datetime.now().isoformat(),
+                                "role": "assistant"
+                            }
+                        }
+                        await manager.send_personal_message(json.dumps(response_msg), websocket)
+                        
+                elif message_data.get("type") == "ping":
+                    # Handle ping/pong for connection health
+                    pong_msg = {
+                        "type": "pong",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await manager.send_personal_message(json.dumps(pong_msg), websocket)
+                    
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                print(f"Error processing message: {e}")
+                error_msg = {
+                    "type": "error",
+                    "data": {
+                        "message": "Sorry, I encountered an error processing your message.",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                }
+                await manager.send_personal_message(json.dumps(error_msg), websocket)
+                
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
         manager.disconnect(websocket)
 
 async def start_broadcast_updates(websocket: WebSocket):
