@@ -116,10 +116,25 @@ Hospital Pulse AI
 - `GET /escalation/dashboard` - Active escalations dashboard
 - `POST /escalation/check-triggers` - Check and create escalations
 
-### AI Assistant
-- `POST /feature/hopx-chat` - HOPX AI assistant chat
+### Analytics & Insights
 - `GET /feature/surge-early-warning` - Surge Early-Warning Index (SEWI)
-- `POST /feature/chat` - Alternative endpoint for chat (backward compatibility)
+
+---
+
+## Recent Updates & Improvements
+
+### ✅ Latest Features (v2.0)
+- **Enhanced No-Show Prediction**: Improved ML model with feature importance analysis
+- **Real-time Feature Importance**: Visual chart showing key predictors (waiting_days, age, SMS)
+- **Better Error Handling**: Comprehensive frontend error management and connection status
+- **Fixed Backend Connection**: Resolved port conflicts and CORS issues
+- **Streamlined Interface**: Removed HopX Assistant chatbot for focused healthcare monitoring
+
+### 🔧 Technical Improvements
+- **Backend Port**: Standardized on port 8000 for consistency
+- **Model Service Auto-Initialization**: Fixed startup issues and test failures
+- **Enhanced API Responses**: Better data formatting and error messages
+- **Improved Frontend UX**: Connection status indicators and user-friendly error messages
 
 ---
 
@@ -176,19 +191,6 @@ python -m uvicorn main:app --reload --port 8000
 
 **API Documentation:** `http://localhost:8000/docs` (Swagger UI)
 
-### OpenAI API Key configuration (for chatbot/LLM)
-1. Create `.env` in `backend/env/.env` (already present in repo template).
-2. Add your key as:
-
-```ini
-OPENAI_API_KEY=sk-... (your key)
-OPENAI_MODEL=gpt-4o-mini
-```
-
-3. Restart backend server.
-
-> Security note: do NOT commit your `OPENAI_API_KEY` into git. Keep it local.
-
 ### Frontend Setup
 ```bash
 cd frontend
@@ -213,12 +215,12 @@ This will start both backend and frontend services simultaneously.
 1. **Start the backend server** on `http://localhost:8000`
 2. **Start the frontend** on `http://localhost:5173`
 3. **Navigate between features** using the tab navigation:
-   - Dashboard: Original hospital operations view
-   - Vitals Monitoring: Patient vitals analysis
-   - Adherence Nudging: Patient engagement tools
-   - No-Show Prediction: Appointment risk assessment
-   - Risk Assessment: Patient deterioration scoring
-   - Escalations: Clinical workflow management
+   - **Dashboard**: Original hospital operations view
+   - **Vitals Monitoring**: Patient vitals analysis
+   - **Adherence Nudging**: Patient engagement tools
+   - **No-Show Prediction**: Appointment risk assessment
+   - **Risk Assessment**: Patient deterioration scoring
+   - **Escalations**: Clinical workflow management
 
 ## Testing
 
@@ -263,12 +265,7 @@ python -m backend.main
 - Check CORS configuration in `main.py`
 - Ensure no firewall is blocking the connection
 
-**5. OpenAI API errors**
-- The chatbot works without an API key using rule-based responses
-- For enhanced AI responses, add your OpenAI API key to `backend/env/.env`
-- Never commit API keys to version control
-
-**6. Port conflicts**
+**5. Port conflicts**
 - Backend default port: 8000
 - Frontend default port: 5173
 - Change ports if needed by modifying startup commands
