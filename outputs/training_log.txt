@@ -1,0 +1,16 @@
+===== Run at 2026-03-31T14:27:59.947829 =====
+dataset: KaggleV2-May-2016.csv
+shape: (110527, 14)
+class_distribution: {0: 88208, 1: 22319}
+best_model: XGBoost
+threshold: 0.25
+metrics: {'accuracy': 0.6716, 'precision': 0.3396, 'recall': 0.6629, 'f1': 0.4491, 'roc_auc': 0.7406}
+
+===== Run at 2026-03-31T14:31:42.456408 =====
+dataset: KaggleV2-May-2016.csv
+shape: (110527, 14)
+class_distribution: {0: 88208, 1: 22319}
+best_model: XGBoost
+threshold: 0.25
+metrics: {'accuracy': 0.6716, 'precision': 0.3396, 'recall': 0.6629, 'f1': 0.4491, 'roc_auc': 0.7406}
+
