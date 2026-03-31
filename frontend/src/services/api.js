@@ -24,9 +24,16 @@ export const getAlerts = () => api.get('/alerts');
 export const getEmergencyLoad = (payload = { horizon: 7 }) => api.post('/predict/emergency', payload);
 export const getIcuStatus = (payload = { horizon: 7 }) => api.post('/predict/icu', payload);
 export const getStaffLoad = (payload = { horizon: 7 }) => api.post('/predict/staff', payload);
+export const getDashboard = () => api.get('/dashboard');
 
+// Generic patient risk / predict endpoint (FastAPI expects numeric fields)
+export const predictPatientRisk = (payload) => api.post('/predict', payload);
 export const predictNoShow = (payload) => api.post('/noshow/predict', payload);
 export const getFeatureInsights = () => api.get('/noshow/model-insights');
+
+export const getChatbotFeed = (params = {}) => api.get('/chatbot/feed', { params });
+export const getChatbotStatus = () => api.get('/chatbot/status');
+export const sendChatMessage = (message) => api.post('/chatbot/chat', { message });
 
 export const getVitalsOverview = () => api.get('/vitals/overview');
 export const getAdherenceOverview = () => api.get('/adherence/population-overview');

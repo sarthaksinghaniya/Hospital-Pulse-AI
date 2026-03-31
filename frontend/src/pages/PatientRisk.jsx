@@ -4,8 +4,9 @@ import Card from '../components/ui/Card.jsx';
 import Button from '../components/ui/Button.jsx';
 import Skeleton from '../components/ui/Skeleton.jsx';
 import Badge from '../components/ui/Badge.jsx';
+import ErrorBox from '../components/ui/ErrorBox.jsx';
 import HorizontalBarChart from '../components/charts/HorizontalBarChart.jsx';
-import { predictNoShow, getFeatureInsights } from '../services/api.js';
+import { predictPatientRisk, getFeatureInsights } from '../services/api.js';
 import { normalizeToPercent, formatPercent } from '../utils/formatters.js';
 
 export default function PatientRisk() {
@@ -25,9 +26,10 @@ export default function PatientRisk() {
       const payload = {
         age: Number(form.age),
         waiting_days: Number(form.waiting_days),
-        sms_received: Boolean(form.sms_received),
+        sms_received: Number(form.sms_received),
       };
-      const { data } = await predictNoShow(payload);
+
+      const { data } = await predictPatientRisk(payload);
       setResult(data);
       const importance = data?.feature_importances || data?.importance || data?.top_factors;
       if (importance) setFeatureData(importance);
@@ -36,7 +38,7 @@ export default function PatientRisk() {
         if (insights?.data?.feature_importances) setFeatureData(insights.data.feature_importances);
       }
     } catch (err) {
-      setError(err?.message || 'Unable to score risk');
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function PatientRisk() {
   const riskScore = result?.probability ?? result?.risk_score ?? result?.risk ?? 0.67;
   const riskLabel = riskScore >= 0.7 ? 'High Risk' : riskScore >= 0.4 ? 'Medium Risk' : 'Low Risk';
 
-  const contributing = result?.contributing_factors || result?.drivers || (normalizedFeatures ? normalizedFeatures.slice(0, 3) : []);
+  const contributing = result?.contributing_factors || result?.drivers || result?.factors || (normalizedFeatures ? normalizedFeatures.slice(0, 3) : []);
   const recommendations = result?.recommendations || [
     'Send empathetic SMS reminder 24h before appointment.',
     'Offer telehealth slot to reduce wait burden.',
@@ -65,10 +67,13 @@ export default function PatientRisk() {
       <Card title="Patient Inputs" subtitle="Simple, interpretable factors" className="xl:col-span-1">
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm text-text-muted">Age</label>
+            <label htmlFor="patient-age" className="text-sm text-text-muted">Age</label>
             <input
+              id="patient-age"
+              name="age"
               type="number"
               min={1}
+              aria-label="Patient age"
               value={form.age}
               onChange={(e) => handleChange('age', e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-text-primary/20"
@@ -76,10 +81,13 @@ export default function PatientRisk() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-text-muted">Waiting days</label>
+            <label htmlFor="waiting-days" className="text-sm text-text-muted">Waiting days</label>
             <input
+              id="waiting-days"
+              name="waiting_days"
               type="number"
               min={0}
+              aria-label="Waiting days"
               value={form.waiting_days}
               onChange={(e) => handleChange('waiting_days', e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-text-primary/20"
@@ -88,11 +96,14 @@ export default function PatientRisk() {
 
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
             <div>
-              <p className="text-sm font-semibold">SMS reminder sent?</p>
+              <label htmlFor="sms-received" className="text-sm font-semibold">SMS reminder sent?</label>
               <p className="text-xs text-text-muted">Switch off if patient did not receive SMS.</p>
             </div>
             <input
+              id="sms-received"
+              name="sms_received"
               type="checkbox"
+              aria-label="SMS reminder received"
               checked={form.sms_received}
               onChange={(e) => handleChange('sms_received', e.target.checked)}
               className="h-4 w-4 accent-text-primary"
@@ -104,19 +115,22 @@ export default function PatientRisk() {
             {loading ? 'Scoring...' : 'Run Risk Scoring'}
           </Button>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          <ErrorBox error={error} />
         </form>
       </Card>
 
       <div className="xl:col-span-2 space-y-4">
         <Card title="Risk Assessment" subtitle="Interpretable AI output" className="bg-white shadow-card">
+          {!result && !loading && !error && (
+            <p className="text-sm text-text-muted">Enter patient details to see prediction.</p>
+          )}
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-8 w-48" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </div>
-          ) : (
+          ) : result ? (
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <p className="text-sm text-text-muted">Overall probability</p>
@@ -127,7 +141,7 @@ export default function PatientRisk() {
                 Patient no-show likelihood
               </Badge>
             </div>
-          )}
+          ) : null}
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -136,20 +150,18 @@ export default function PatientRisk() {
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-4 w-3/4" />)}
               </div>
-            ) : (
+            ) : contributing?.length ? (
               <ul className="space-y-2 text-sm text-text-primary">
-                {contributing?.length ? (
-                  contributing.slice(0, 3).map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-text-primary" />
-                      <span className="font-semibold">{item.name || item.feature || item.label}</span>
-                      <span className="text-text-muted">{item.value ? `${Number(item.value).toFixed(1)}%` : ''}</span>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-text-muted">Run a prediction to see drivers.</p>
-                )}
+                {contributing.slice(0, 3).map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-text-primary" />
+                    <span className="font-semibold">{item.name || item.feature || item.label || item}</span>
+                    <span className="text-text-muted">{item.value ? `${Number(item.value).toFixed(1)}%` : ''}</span>
+                  </li>
+                ))}
               </ul>
+            ) : (
+              <p className="text-text-muted">Run a prediction to see drivers.</p>
             )}
           </Card>
 

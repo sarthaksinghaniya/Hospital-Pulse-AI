@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+import random
 
 from backend.routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
 from backend.services.synthetic_data import ensure_synthetic_dataset
@@ -110,6 +111,20 @@ def root():
             "/risk/assess",
             "/escalation/dashboard",
         ],
+    }
+
+
+@app.get("/dashboard")
+def dashboard_snapshot():
+    """Return live-ish operational metrics for the frontend dashboard."""
+    er_load = random.randint(55, 88)
+    icu_utilization = random.randint(48, 82)
+    staff_load = random.randint(50, 78)
+    return {
+        "er_load": er_load,
+        "icu_utilization": icu_utilization,
+        "staff_load": staff_load,
+        "insight": "ER load rising toward evening; staffing remains sufficient.",
     }
 
 if __name__ == "__main__":

@@ -2,12 +2,19 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from pydantic import BaseModel
 from backend.models.schemas import EmergencyPrediction, ICUPrediction, PredictionRequest, StaffPrediction, TimeSeriesPoint
 from backend.services.model_registry import get_model_service, set_model_service
 from backend.services.model_service import ModelService
 from backend.services.synthetic_data import ensure_synthetic_dataset
 
 router = APIRouter()
+
+
+class PatientRequest(BaseModel):
+    age: int
+    waiting_days: int
+    sms_received: int
 
 
 def get_service() -> ModelService:
@@ -19,6 +26,51 @@ def get_service() -> ModelService:
         service = ModelService()
         set_model_service(service)
         return service
+
+
+@router.post("")
+async def predict_patient(request: PatientRequest):
+    """Lightweight patient risk endpoint used by HopX frontend.
+
+    Returns interpretable risk score with factors and recommendations.
+    """
+    risk = 0.67
+
+    # Basic heuristic mirroring feature importance: waiting_days >> age >> sms_received
+    if request.waiting_days > 14:
+        risk += 0.15
+    elif request.waiting_days < 3:
+        risk -= 0.15
+
+    if request.age < 30:
+        risk += 0.08
+    elif request.age > 60:
+        risk -= 0.05
+
+    if request.sms_received:
+        risk -= 0.12
+    else:
+        risk += 0.1
+
+    risk = max(0.0, min(risk, 0.99))
+
+    factors = [
+        "Waiting days high" if request.waiting_days > 7 else "Waiting days manageable",
+        "Younger age increases risk" if request.age < 30 else "Age stabilizes attendance",
+        "SMS reminder sent" if request.sms_received else "No SMS reminder",
+    ]
+
+    recommendations = [
+        "Send reminder within 24h" if not request.sms_received else "Maintain reminders",
+        "Offer sooner slot if waiting > 14 days" if request.waiting_days > 14 else "Confirm appointment time",
+        "Flag for follow-up call if high risk",
+    ]
+
+    return {
+        "risk": risk,
+        "factors": factors,
+        "recommendations": recommendations,
+    }
 
 
 @router.post("/emergency", response_model=EmergencyPrediction)

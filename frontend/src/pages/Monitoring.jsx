@@ -1,6 +1,7 @@
 import Card from '../components/ui/Card.jsx';
 import Skeleton from '../components/ui/Skeleton.jsx';
 import Badge from '../components/ui/Badge.jsx';
+import ChatbotPanel from '../components/ChatbotPanel.jsx';
 import useApi from '../hooks/useApi.js';
 import { getVitalsOverview, getAdherenceOverview } from '../services/api.js';
 import { formatPercent } from '../utils/formatters.js';
@@ -35,7 +36,7 @@ export default function Monitoring() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-text-muted">No vitals stream yet. Connect devices to start monitoring.</p>
+          <p className="text-sm text-text-muted">📡 Connect devices to start real-time monitoring.</p>
         )}
       </Card>
 
@@ -64,6 +65,10 @@ export default function Monitoring() {
           <p className="text-sm text-text-muted">No adherence data available.</p>
         )}
       </Card>
+
+      <div className="lg:col-span-2">
+        <ChatbotPanel baseUrl={import.meta.env.VITE_API_URL} />
+      </div>
     </div>
   );
 }
