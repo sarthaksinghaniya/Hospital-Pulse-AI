@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ShieldAlert, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import Card from '../components/ui/Card.jsx';
 import Button from '../components/ui/Button.jsx';
 import Skeleton from '../components/ui/Skeleton.jsx';
@@ -10,7 +10,13 @@ import { predictPatientRisk, getFeatureInsights } from '../services/api.js';
 import { normalizeToPercent, formatPercent } from '../utils/formatters.js';
 
 export default function PatientRisk() {
-  const [form, setForm] = useState({ age: 45, waiting_days: 4, sms_received: true });
+  const [form, setForm] = useState({
+    age: 34,
+    gender: 'F',
+    waiting_days: 5,
+    scheduled_hour: 10,
+    neighbourhood: 'JARDIM CAMBURI',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -25,11 +31,21 @@ export default function PatientRisk() {
     try {
       const payload = {
         age: Number(form.age),
+        gender: form.gender,
         waiting_days: Number(form.waiting_days),
-        sms_received: Number(form.sms_received),
+        scheduled_hour: Number(form.scheduled_hour),
+        neighbourhood: form.neighbourhood,
+        // backend requires these; keep safe defaults for smooth UX
+        scholarship: 0,
+        hipertension: 0,
+        diabetes: 0,
+        alcoholism: 0,
+        handcap: 0,
+        sms_received: 1,
       };
 
       const { data } = await predictPatientRisk(payload);
+      // backend returns probability (0-100) and risk label
       setResult(data);
       const importance = data?.feature_importances || data?.importance || data?.top_factors;
       if (importance) setFeatureData(importance);
@@ -52,8 +68,10 @@ export default function PatientRisk() {
     return normalizeToPercent(mapped).slice(0, 5);
   }, [featureData]);
 
-  const riskScore = result?.probability ?? result?.risk_score ?? result?.risk ?? 0.67;
-  const riskLabel = riskScore >= 0.7 ? 'High Risk' : riskScore >= 0.4 ? 'Medium Risk' : 'Low Risk';
+  const probPct = result?.probability ?? (result?.risk_score ? result.risk_score * 100 : undefined);
+  const prob01 = probPct !== undefined ? probPct / 100 : 0;
+  const riskLabel = result?.risk ?? (prob01 >= 0.7 ? 'High' : prob01 >= 0.4 ? 'Medium' : 'Low');
+  const badgeVariant = riskLabel === 'High' ? 'danger' : riskLabel === 'Medium' ? 'warning' : 'success';
 
   const contributing = result?.contributing_factors || result?.drivers || result?.factors || (normalizedFeatures ? normalizedFeatures.slice(0, 3) : []);
   const recommendations = result?.recommendations || [
@@ -94,25 +112,38 @@ export default function PatientRisk() {
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
-            <div>
-              <label htmlFor="sms-received" className="text-sm font-semibold">SMS reminder sent?</label>
-              <p className="text-xs text-text-muted">Switch off if patient did not receive SMS.</p>
-            </div>
+          <div className="space-y-2">
+            <label htmlFor="gender" className="text-sm text-text-muted">Gender</label>
+            <select
+              id="gender"
+              name="gender"
+              value={form.gender}
+              onChange={(e) => handleChange('gender', e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-text-primary/20"
+            >
+              <option value="F">Female</option>
+              <option value="M">Male</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="scheduled-hour" className="text-sm text-text-muted">Scheduled hour</label>
             <input
-              id="sms-received"
-              name="sms_received"
-              type="checkbox"
-              aria-label="SMS reminder received"
-              checked={form.sms_received}
-              onChange={(e) => handleChange('sms_received', e.target.checked)}
-              className="h-4 w-4 accent-text-primary"
+              id="scheduled-hour"
+              name="scheduled_hour"
+              type="number"
+              min={0}
+              max={23}
+              aria-label="Scheduled hour"
+              value={form.scheduled_hour}
+              onChange={(e) => handleChange('scheduled_hour', e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-text-primary/20"
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
             <Send size={16} />
-            {loading ? 'Scoring...' : 'Run Risk Scoring'}
+            {loading ? 'Analyzing patient risk...' : 'Get instant prediction'}
           </Button>
 
           <ErrorBox error={error} />
@@ -134,11 +165,11 @@ export default function PatientRisk() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <p className="text-sm text-text-muted">Overall probability</p>
-                <p className="text-3xl font-semibold">{formatPercent(riskScore * 100)}</p>
-                <p className="text-sm text-text-primary mt-1">{riskLabel}</p>
+                <p className="text-3xl font-semibold">{formatPercent(probPct)}</p>
+                <p className="text-sm text-text-primary mt-1">{riskLabel} risk</p>
               </div>
-              <Badge variant={riskScore >= 0.7 ? 'danger' : riskScore >= 0.4 ? 'warning' : 'success'}>
-                Patient no-show likelihood
+              <Badge variant={badgeVariant}>
+                {riskLabel === 'High' ? '🔴 High' : riskLabel === 'Medium' ? '🟠 Medium' : '🟢 Low'} no-show likelihood
               </Badge>
             </div>
           ) : null}
