@@ -127,13 +127,8 @@ const NoShowPrediction = () => {
       // Ensure the response has the expected structure
       const predictionData = response.data.data;
       if (predictionData) {
-        // Set default values for missing properties
-        setPrediction({
-          no_show_probability: predictionData.no_show_probability || 0,
-          risk_category: predictionData.risk_category || 'Low',
-          contributing_factors: predictionData.contributing_factors || [],
-          recommendations: predictionData.recommendations || []
-        });
+        // Set prediction with new format
+        setPrediction(predictionData);
       } else {
         setError('Invalid prediction response from server');
       }
@@ -222,9 +217,9 @@ const NoShowPrediction = () => {
 
   const renderFeatureImportance = () => {
     console.log('DEBUG: Rendering feature importance chart...');
-    console.log('DEBUG: featureImportance state:', featureImportance);
+    console.log('DEBUG: modelInsights state:', modelInsights);
     
-    if (!featureImportance || !featureImportance.feature_importance) {
+    if (!modelInsights || !modelInsights.feature_importance) {
       console.log('DEBUG: No feature importance data available');
       return (
         <Card>
@@ -238,12 +233,7 @@ const NoShowPrediction = () => {
       );
     }
 
-    const importanceData = featureImportance.feature_importance;
-    console.log('DEBUG: Raw importance data:', importanceData);
-    
-    // Convert to chart format and sort
-    const data = Object.entries(importanceData)
-      .slice(0, 10)  // Top 10 features
+    const data = Object.entries(modelInsights.feature_importance || {})
       .map(([feature, importance]) => ({
         feature: feature
           .replace(/_/g, ' ')
@@ -251,7 +241,7 @@ const NoShowPrediction = () => {
           .replace(/([A-Z])/g, ' $1')
           .trim()
           .toUpperCase(),
-        importance: parseFloat((importance * 100).toFixed(2))
+        importance: parseFloat(importance)  // Already in percentage format
       }))
       .filter(item => item.importance > 0.01)  // Filter out very small values
       .sort((a, b) => b.importance - a.importance);  // Sort by importance descending
@@ -447,11 +437,11 @@ const NoShowPrediction = () => {
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h6">No-Show Probability</Typography>
                   <Typography variant="h3" color={getRiskColor(prediction.risk_category || 'low')}>
-                    {prediction.no_show_probability ? (prediction.no_show_probability * 100).toFixed(1) : '0'}%
+                    {prediction.probability ? `${prediction.probability}%` : '0%'}
                   </Typography>
                   <Chip
-                    label={prediction.risk_category || 'Unknown'}
-                    color={getRiskColor(prediction.risk_category || 'low')}
+                    label={prediction.risk_level || prediction.risk_category || 'Unknown'}
+                    color={getRiskColor(prediction.risk_level || prediction.risk_category || 'low')}
                     sx={{ mt: 1 }}
                   />
                 </Paper>
@@ -465,7 +455,7 @@ const NoShowPrediction = () => {
                         <ListItem key={index}>
                           <ListItemText
                             primary={factor.factor}
-                            secondary={`Importance: ${(factor.importance * 100).toFixed(1)}%`}
+                            secondary={`Importance: ${factor.importance}%`}
                           />
                         </ListItem>
                       ))

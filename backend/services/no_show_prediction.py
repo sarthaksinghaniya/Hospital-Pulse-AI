@@ -241,24 +241,39 @@ class NoShowPredictionService:
     
     def predict_no_show(self, patient_data: Dict) -> Dict:
         """Predict no-show probability for a single patient."""
+        # Auto-train model if not trained
         if not self.model_trained:
-            return {
-                'error': 'Model not trained. Call train_model() first.'
-            }
+            print("DEBUG: Model not trained, auto-training...")
+            train_result = self.train_model()
+            if train_result['status'] != 'success':
+                return {
+                    'error': f'Model training failed: {train_result.get("message", "Unknown error")}'
+                }
         
         try:
+            print(f"DEBUG: Making prediction for patient: {patient_data.get('patient_id', 'Unknown')}")
+            
             # Convert patient data to DataFrame
             df = pd.DataFrame([patient_data])
             
             # Preprocess the data
             df_processed = self._preprocess_patient_data(df)
+            print(f"DEBUG: Processed data shape: {df_processed.shape}")
             
             # Prepare features
             X = self.prepare_features(df_processed, fit_encoders=False)
+            print(f"DEBUG: Feature matrix shape: {X.shape}")
+            print(f"DEBUG: Feature columns: {list(X.columns)}")
             
             # Make prediction
             prediction_proba = self.model.predict_proba(X)[0]
             no_show_prob = prediction_proba[1]  # Probability of class 1 (no-show)
+            
+            print(f"DEBUG: Prediction probabilities: {prediction_proba}")
+            print(f"DEBUG: No-show probability: {no_show_prob}")
+            
+            # Convert to percentage
+            no_show_percentage = round(no_show_prob * 100, 2)
             
             # Determine risk category
             if no_show_prob >= 0.7:
@@ -273,19 +288,41 @@ class NoShowPredictionService:
             
             # Get top contributing factors
             contributing_factors = self._get_contributing_factors(df_processed.iloc[0])
+            print(f"DEBUG: Contributing factors: {contributing_factors}")
             
-            return {
+            # Generate recommendations
+            recommendations = self._generate_no_show_recommendations(no_show_prob, contributing_factors)
+            print(f"DEBUG: Recommendations: {recommendations}")
+            
+            # Prepare feature importance for display
+            feature_importance_display = {}
+            if self.feature_importance:
+                # Convert to percentage and round
+                for feature, importance in self.feature_importance.items():
+                    feature_importance_display[feature] = round(importance * 100, 2)
+            
+            print(f"DEBUG: Feature importance for display: {feature_importance_display}")
+            
+            result = {
                 'patient_id': patient_data.get('patient_id', 'Unknown'),
-                'no_show_probability': round(no_show_prob, 3),
+                'probability': no_show_percentage,
+                'risk_level': risk_category,
                 'risk_category': risk_category,
                 'color_indicator': color,
-                'prediction_confidence': max(prediction_proba),
+                'confidence': round(max(prediction_proba) * 100, 2),
                 'contributing_factors': contributing_factors,
-                'recommendations': self._generate_no_show_recommendations(no_show_prob, contributing_factors),
+                'recommendations': recommendations,
+                'feature_importance': feature_importance_display,
                 'predicted_at': datetime.now().isoformat()
             }
             
+            print(f"DEBUG: Final prediction result: {result}")
+            return result
+            
         except Exception as e:
+            print(f"DEBUG: Prediction error: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'error': f'Prediction failed: {str(e)}'
             }
@@ -317,17 +354,25 @@ class NoShowPredictionService:
                                               bins=[0, 12, 18, 35, 50, 65, 120],
                                               labels=['Child', 'Teen', 'Young Adult', 'Adult', 'Middle Age', 'Senior'])
         
+        # Add missing Neighbourhood column with default value
+        if 'Neighbourhood' not in df_processed.columns:
+            df_processed['Neighbourhood'] = 'UNKNOWN'  # Default neighborhood
+        
         # Ensure binary columns are properly formatted
         binary_cols = ['Scholarship', 'Hipertension', 'Diabetes', 'Alcoholism', 'Handcap', 'SMS_received']
         for col in binary_cols:
             if col in df_processed.columns:
                 df_processed[col] = df_processed[col].astype(int)
         
+        print(f"DEBUG: Preprocessed patient data columns: {list(df_processed.columns)}")
         return df_processed
     
     def _get_contributing_factors(self, patient_data: pd.Series) -> List[Dict]:
         """Get top contributing factors for the prediction."""
         contributing_factors = []
+        
+        print(f"DEBUG: Analyzing contributing factors for patient data: {patient_data.to_dict()}")
+        print(f"DEBUG: Available feature importance: {self.feature_importance}")
         
         # Map features to human-readable factors
         factor_mapping = {
@@ -336,21 +381,67 @@ class NoShowPredictionService:
             'age': ('Younger Age', lambda x: x < 30),
             'Scholarship': ('No Scholarship', lambda x: x == 0),
             'Hipertension': ('Hypertension', lambda x: x == 1),
-            'Diabetes': ('Diabetes', lambda x: x == 1)
+            'Diabetes': ('Diabetes', lambda x: x == 1),
+            'Alcoholism': ('Alcoholism', lambda x: x == 1),
+            'Handcap': ('Handicap', lambda x: x > 0),
+            'scheduled_hour': ('Late Hour', lambda x: x >= 16),
+            'Gender_encoded': ('Gender Factor', lambda x: x in [0, 1])  # Always include gender
         }
         
         for feature, (description, condition) in factor_mapping.items():
-            if feature in patient_data and condition(patient_data[feature]):
-                importance = self.feature_importance.get(feature, 0)
-                contributing_factors.append({
-                    'factor': description,
-                    'importance': round(importance, 3),
-                    'value': patient_data[feature]
-                })
+            if feature in patient_data:
+                try:
+                    value = patient_data[feature]
+                    if condition(value):
+                        importance = self.feature_importance.get(feature, 0.05)  # Default 5% if not found
+                        contributing_factors.append({
+                            'factor': description,
+                            'importance': round(importance * 100, 2),  # Convert to percentage
+                            'value': value,
+                            'feature_name': feature
+                        })
+                        print(f"DEBUG: Added factor: {description}, importance: {importance}, value: {value}")
+                except Exception as e:
+                    print(f"DEBUG: Error processing factor {feature}: {e}")
+                    continue
+        
+        # If no factors found, add default factors based on top features
+        if not contributing_factors and self.feature_importance:
+            print("DEBUG: No specific factors found, using top features")
+            top_features = list(self.feature_importance.keys())[:3]
+            for feature in top_features:
+                if feature in patient_data:
+                    importance = self.feature_importance[feature]
+                    value = patient_data[feature]
+                    
+                    # Create description based on feature name
+                    description_map = {
+                        'waiting_days': f'Wait Time: {value} days',
+                        'age': f'Age: {value} years',
+                        'SMS_received': f'SMS: {"Yes" if value else "No"}',
+                        'Gender_encoded': f'Gender: {"Female" if value == 0 else "Male"}',
+                        'Scholarship': f'Scholarship: {"Yes" if value else "No"}',
+                        'Hipertension': f'Hypertension: {"Yes" if value else "No"}',
+                        'Diabetes': f'Diabetes: {"Yes" if value else "No"}',
+                        'Alcoholism': f'Alcoholism: {"Yes" if value else "No"}',
+                        'Handcap': f'Handicap: {"Yes" if value > 0 else "No"}',
+                        'scheduled_hour': f'Scheduled Hour: {value}:00'
+                    }
+                    
+                    description = description_map.get(feature, f'{feature}: {value}')
+                    
+                    contributing_factors.append({
+                        'factor': description,
+                        'importance': round(importance * 100, 2),
+                        'value': value,
+                        'feature_name': feature
+                    })
         
         # Sort by importance and return top 5
         contributing_factors.sort(key=lambda x: x['importance'], reverse=True)
-        return contributing_factors[:5]
+        result = contributing_factors[:5]
+        print(f"DEBUG: Final contributing factors: {result}")
+        return result
     
     def _generate_no_show_recommendations(self, probability: float, factors: List[Dict]) -> List[str]:
         """Generate recommendations to reduce no-show probability."""
