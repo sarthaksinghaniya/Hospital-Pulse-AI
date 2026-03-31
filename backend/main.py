@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import random
 
-from backend.routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot
+from backend.routes import predictions, alerts, recommendations, feature, vitals, adherence, noshow, deterioration_risk, escalation, chatbot, noshow_api
 from backend.services.synthetic_data import ensure_synthetic_dataset
 from backend.services.model_service import ModelService
 from backend.services.model_registry import set_model_service
@@ -69,6 +69,7 @@ app.include_router(feature.router, prefix="/feature", tags=["feature"], dependen
 app.include_router(vitals.router, prefix="/vitals", tags=["vitals"], dependencies=[])
 app.include_router(adherence.router, prefix="/adherence", tags=["adherence"], dependencies=[])
 app.include_router(noshow.router, prefix="/noshow", tags=["noshow"], dependencies=[])
+app.include_router(noshow_api.router, tags=["no-show-ml"])
 app.include_router(deterioration_risk.router, prefix="/risk", tags=["risk"], dependencies=[])
 app.include_router(escalation.router, prefix="/escalation", tags=["escalation"], dependencies=[])
 app.include_router(chatbot.router, prefix="/chatbot", tags=["chatbot"], dependencies=[])
