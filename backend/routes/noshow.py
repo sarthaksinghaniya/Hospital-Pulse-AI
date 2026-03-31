@@ -4,7 +4,7 @@ API Routes for No-Show Prediction
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from backend.services.no_show_prediction import NoShowPredictionService
 
@@ -12,19 +12,31 @@ router = APIRouter()
 no_show_service = NoShowPredictionService()
 
 class PatientDataRequest(BaseModel):
-    patient_id: str
-    Age: int = Field(..., ge=0, le=150)
-    Gender: str
-    waiting_days: int = Field(1, ge=0)
-    scheduled_hour: int = Field(10, ge=0, le=23)
-    scheduled_dayofweek: int = Field(0, ge=0, le=6)
-    appointment_dayofweek: int = Field(0, ge=0, le=6)
-    SMS_received: int = Field(1, ge=0, le=1)
-    Scholarship: int = Field(0, ge=0, le=1)
-    Hipertension: int = Field(0, ge=0, le=1)
-    Diabetes: int = Field(0, ge=0, le=1)
-    Alcoholism: int = Field(0, ge=0, le=1)
-    Handcap: int = Field(0, ge=0, le=1)
+    patient_id: str = Field("", description="Patient identifier")
+    Age: int = Field(..., ge=0, le=150, description="Patient age")
+    Gender: str = Field(..., description="Patient gender (M/F)")
+    waiting_days: int = Field(1, ge=0, description="Days until appointment")
+    scheduled_hour: int = Field(10, ge=0, le=23, description="Scheduled hour (0-23)")
+    scheduled_dayofweek: int = Field(0, ge=0, le=6, description="Scheduled day of week (0-6, 0=Monday)")
+    appointment_dayofweek: int = Field(0, ge=0, le=6, description="Appointment day of week (0-6, 0=Monday)")
+    SMS_received: int = Field(1, ge=0, le=1, description="SMS received (0=No, 1=Yes)")
+    Scholarship: int = Field(0, ge=0, le=1, description="Scholarship (0=No, 1=Yes)")
+    Hipertension: int = Field(0, ge=0, le=1, description="Hypertension (0=No, 1=Yes)")
+    Diabetes: int = Field(0, ge=0, le=1, description="Diabetes (0=No, 1=Yes)")
+    Alcoholism: int = Field(0, ge=0, le=1, description="Alcoholism (0=No, 1=Yes)")
+    Handcap: int = Field(0, ge=0, le=1, description="Handicap (0=No, 1=Yes)")
+    
+    @validator('Gender')
+    def validate_gender(cls, v):
+        if v not in ['M', 'F', 'm', 'f']:
+            raise ValueError('Gender must be M or F')
+        return v.upper()
+    
+    @validator('patient_id')
+    def validate_patient_id(cls, v):
+        if not v:
+            return 'UNKNOWN'
+        return str(v)
 
 class BatchPredictionRequest(BaseModel):
     patients: List[PatientDataRequest]
