@@ -41,6 +41,42 @@ def train_no_show_model():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def _serialize_value(value):
+    """Serialize numpy types and other objects to JSON-serializable types."""
+    try:
+        # Handle numpy types
+        import numpy as np
+        if isinstance(value, (np.integer, np.floating)):
+            return float(value)
+        elif isinstance(value, np.ndarray):
+            return value.tolist()
+        elif hasattr(value, '__dict__'):
+            # Handle objects with __dict__ attribute
+            return {k: _serialize_value(v) for k, v in value.__dict__.items()}
+        elif isinstance(value, dict):
+            return {k: _serialize_value(v) for k, v in value.items()}
+        elif isinstance(value, (list, tuple)):
+            return [_serialize_value(item) for item in value]
+        else:
+            return value
+    except:
+        return str(value)
+
+def _serialize_prediction(prediction):
+    """Serialize prediction result to JSON-serializable format."""
+    return {
+        "patient_id": str(prediction.get('patient_id', 'Unknown')),
+        "probability": float(prediction.get('probability', 0)),
+        "risk_level": str(prediction.get('risk_level', 'Low')),
+        "risk_category": str(prediction.get('risk_category', 'Low')),
+        "color_indicator": str(prediction.get('color_indicator', 'green')),
+        "confidence": float(prediction.get('confidence', 0)),
+        "contributing_factors": _serialize_value(prediction.get('contributing_factors', [])),
+        "recommendations": _serialize_value(prediction.get('recommendations', [])),
+        "feature_importance": _serialize_value(prediction.get('feature_importance', {})),
+        "predicted_at": str(prediction.get('predicted_at', ''))
+    }
+
 @router.post("/predict")
 def predict_no_show(request: PatientDataRequest):
     """Predict no-show probability for a single patient."""
@@ -57,7 +93,7 @@ def predict_no_show(request: PatientDataRequest):
         
         return {
             "status": "success",
-            "data": prediction
+            "data": _serialize_prediction(prediction)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
