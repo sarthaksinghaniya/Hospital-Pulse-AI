@@ -99,6 +99,31 @@ def _top_factors(model, df_row) -> List[str]:
         return []
 
 
+def _recommendation(prob: float, df_row: pd.DataFrame) -> str:
+    """Translate probability + key features into an actionable next step."""
+    pct = prob * 100
+    base = (
+        "⚠️ High risk of no-show. Recommend reminder call or rescheduling."
+        if pct > 60
+        else "⚠️ Moderate risk. Consider SMS reminder."
+        if pct >= 30
+        else "✅ Low risk. No action needed."
+    )
+
+    # Advanced context from features
+    msgs = []
+    waiting = df_row.get("waiting_days")
+    age = df_row.get("age")
+    if waiting is not None and waiting.iloc[0] >= 7:
+        msgs.append("Reduce scheduling delay")
+    if age is not None and age.iloc[0] >= 65:
+        msgs.append("Offer assistance / follow-up for elderly")
+
+    if msgs:
+        base += " " + " ".join(msgs)
+    return base
+
+
 @router.post("/predict", summary="Predict patient no-show probability")
 async def predict(payload: PatientPayload):
     model = _ensure_model_loaded()
@@ -112,6 +137,7 @@ async def predict(payload: PatientPayload):
     risk = "High" if prob >= _threshold else "Low"
     factors = _top_factors(model, df)
     insight = factors[0] if factors else "Model-driven factors applied"
+    recommendation = _recommendation(prob, df)
 
     return {
         "probability": round(prob * 100, 2),
@@ -119,4 +145,5 @@ async def predict(payload: PatientPayload):
         "threshold": _threshold,
         "insight": insight,
         "top_factors": factors,
+        "recommendation": recommendation,
     }
