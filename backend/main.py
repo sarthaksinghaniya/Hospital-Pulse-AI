@@ -27,24 +27,25 @@ def get_cors_origins():
     """Get allowed origins based on environment"""
     env = os.getenv("ENV", "dev").lower()
     
-    print(f"🌍 Environment: {env}")
+    print(f"[CORS] Environment: {env}")
     
     if env == "production":
-        # Production origins from environment variable
-        prod_origins = os.getenv("PROD_CORS_ORIGINS", "")
+        # Production origins from environment variable.
+        # Backward-compatible with CORS_ORIGINS used in deployment guides.
+        prod_origins = os.getenv("PROD_CORS_ORIGINS") or os.getenv("CORS_ORIGINS", "")
         origins = [origin.strip() for origin in prod_origins.split(",") if origin.strip()]
-        print(f"🔒 Production CORS Origins: {origins}")
+        print(f"[CORS] Production origins: {origins}")
     else:
         # Development origins
         dev_origins = os.getenv("DEV_CORS_ORIGINS", 
             "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,https://hopx.netlify.app")
         origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
-        print(f"🛠️ Development CORS Origins: {origins}")
+        print(f"[CORS] Development origins: {origins}")
     
     # Fallback to allow all if no origins configured
     if not origins:
         origins = ["*"]
-        print("⚠️ No origins configured, allowing all origins")
+        print("[CORS] No origins configured, allowing all origins")
     
     return origins
 

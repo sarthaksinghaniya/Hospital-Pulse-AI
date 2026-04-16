@@ -2,22 +2,21 @@ services:
   # Backend FastAPI service
   - type: web
     name: hospital-pulse-backend
-    runtime: docker
+    runtime: python
     repo: https://github.com/ByteQuest-2025/GFGBQ-Team-hopx
     rootDir: backend
-    dockerfilePath: Dockerfile
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
-      - key: PYTHONPATH
-        value: /opt/render/project/src
+      - key: ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: https://hospital-pulse-frontend.onrender.com
       - key: OPENAI_API_KEY
         value: dummy_key_for_now
       - key: OPENAI_MODEL
         value: gpt-4o-mini
-    disk:
-      name: data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
 
   # Frontend static site
   - type: web
