@@ -46,8 +46,9 @@ export default function PatientRisk() {
 
       const { data } = await predictPatientRisk(payload);
       // backend returns probability (0-100) and risk label
-      setResult(data);
-      const importance = data?.feature_importances || data?.importance || data?.top_factors;
+      const responseData = data?.data || data;
+      setResult(responseData);
+      const importance = responseData?.feature_importance || responseData?.feature_importances || responseData?.importance || responseData?.top_factors;
       if (importance) setFeatureData(importance);
       else {
         const insights = await getFeatureInsights().catch(() => null);

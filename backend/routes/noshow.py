@@ -141,7 +141,7 @@ def get_model_insights():
         insights = no_show_service.get_model_insights()
         return {
             "status": "success",
-            "data": insights
+            "data": _serialize_value(insights)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -159,8 +159,8 @@ def get_feature_importance():
         return {
             "status": "success",
             "data": {
-                "feature_importance": no_show_service.feature_importance,
-                "top_features": list(no_show_service.feature_importance.keys())[:10]
+                "feature_importance": _serialize_value(no_show_service.feature_importance),
+                "top_features": _serialize_value(list(no_show_service.feature_importance.keys())[:10])
             }
         }
     except Exception as e:
@@ -173,7 +173,7 @@ def load_trained_model():
         result = no_show_service.load_model()
         return {
             "status": result['status'],
-            "data": result
+            "data": _serialize_value(result)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

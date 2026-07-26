@@ -16,11 +16,10 @@
 - **Coverage**: API endpoints, ModelService initialization, data processing
 - **Command**: `python -m pytest` - 7 passed, 5 warnings
 
-### 4. ModelService Initialization - PARTIAL
-- **Issue**: Some endpoints fail with "ModelService not initialized yet" 
+### 4. ModelService Initialization - FIXED
+- **Status**: Fixed auto-initialization in `get_model_service` and simplified imports in endpoints.
 - **Affected**: `/predict/emergency`, `/feature/surge-early-warning`
-- **Status**: Works in tests but fails in direct API calls
-- **Fix Needed**: ModelService auto-initialization for API endpoints
+- **Result**: No longer fails with "ModelService not initialized yet".
 
 ## Frontend Status 
 ### No Critical Issues
@@ -68,7 +67,7 @@ tests\test_predictions.py ....                                             [100%
 - `/feature/surge-early-warning` - ModelService not initialized yet
 
 ## Next Steps
-1. Fix ModelService auto-initialization for all endpoints
+1. [x] Fix ModelService auto-initialization for all endpoints (Fixed, and also fixed numpy.float32 serialization errors)
 2. Test full application stack (frontend + backend)
 3. Verify Docker setup if needed
 4. Add more comprehensive error handling
