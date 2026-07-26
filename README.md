@@ -11,10 +11,21 @@ Healthcare systems often face sudden Emergency Department surges, ICU bed shorta
 ---
 
 
-**TechNeekX**
+**TNX Sparks**
 
-**Developer:** Sarthak Singhaniya  
-**Portfolio:** https://sarthaksinghaniya.netlify.app
+## 👥 Team Work Division
+
+|-----------------------------------------------------------|
+| TEAM MEMBERS   |   ROLE                                   |
+|----------------|------------------------------------------|   
+| Sneha Yadav    | project Lead & Fronted Developer         |
+|----------------|------------------------------------------|
+| Soham Srivastav| Backend,testing & debugging              |
+|----------------|------------------------------------------|
+| Shweta Devi    |PPT Presentation & Github Version         |
+|----------------|------------------------------------------|
+| Jahnvi Katiyar |UI/UX Improvements & Readme Documentation |
+|----------------|------------------------------------------|
 
 ---
 
