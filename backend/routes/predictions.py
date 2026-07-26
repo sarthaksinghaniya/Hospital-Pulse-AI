@@ -18,14 +18,7 @@ class PatientRequest(BaseModel):
 
 
 def get_service() -> ModelService:
-    try:
-        return get_model_service()
-    except RuntimeError:
-        # Auto-initialize if not already done
-        ensure_synthetic_dataset()
-        service = ModelService()
-        set_model_service(service)
-        return service
+    return get_model_service()
 
 
 @router.post("")

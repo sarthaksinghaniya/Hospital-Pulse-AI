@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from backend.main import app
 
 def test_predict_emergency(client: TestClient):
     response = client.post("/predict/emergency", json={"horizon_hours": 24})

@@ -1,3 +1,9 @@
+node_modules
+dist
+build
+coverage
+tmp
+temp
 # Logs
 logs
 *.log

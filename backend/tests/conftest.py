@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from backend.main import app
 from backend.services.model_service import ModelService
 from backend.services.model_registry import set_model_service
 from backend.services.synthetic_data import ensure_synthetic_dataset

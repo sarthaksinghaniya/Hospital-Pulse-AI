@@ -9,14 +9,7 @@ router = APIRouter()
 
 
 def get_service():
-    try:
-        return get_model_service()
-    except RuntimeError:
-        # Auto-initialize if not already done
-        ensure_synthetic_dataset()
-        service = ModelService()
-        set_model_service(service)
-        return service
+    return get_model_service()
 
 
 @router.get("/surge-early-warning", response_model=SurgeEarlyWarning)

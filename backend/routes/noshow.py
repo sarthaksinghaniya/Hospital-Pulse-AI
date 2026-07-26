@@ -48,7 +48,7 @@ def train_no_show_model():
         result = no_show_service.train_model()
         return {
             "status": "success" if result['status'] == 'success' else "error",
-            "data": result
+            "data": _serialize_value(result)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -12,7 +12,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
@@ -176,14 +176,16 @@ class NoShowPredictionService:
                 X, y, test_size=0.2, random_state=42, stratify=y
             )
             
-            # Train Random Forest model
-            self.model = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=10,
-                min_samples_split=10,
-                min_samples_leaf=5,
+            # Train XGBoost model
+            self.model = XGBClassifier(
+                n_estimators=150,
+                max_depth=6,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                scale_pos_weight=(len(y_train) - sum(y_train)) / sum(y_train) if sum(y_train) > 0 else 1,
                 random_state=42,
-                class_weight='balanced'
+                eval_metric='logloss'
             )
             
             self.model.fit(X_train, y_train)
