@@ -24,53 +24,52 @@
 ## Frontend Status 
 ### No Critical Issues
 - React/Vite configuration is correct
-- API base URL properly set to port 8001
-- Feature importance chart fixed with proper data handling
+- API base URL properly set to port 8000 (with proxy script `main.py` in parent directory)
+- Feature importance chart fixed with proper nested data handling
 - All components import correctly
 
 ## Recent Fixes Applied
 
 ### Backend Fixes
 1. Fixed Pydantic v2 compatibility (.dict() → .model_dump())
-2. Added Python path configuration for cross-directory imports
+2. Added Python path configuration for cross-directory imports and proxy `start_backend.bat` / `main.py`
 3. Fixed ModelService initialization in tests
 4. Enhanced no-show prediction with proper feature importance
-5. Added comprehensive debug logging
+5. Fixed `numpy.float32` serialization crashes across all prediction endpoints.
 
 ### Frontend Fixes  
-1. Fixed API base URL (8000 → 8001)
+1. Fixed API base URL (now using default 8000 effectively)
 2. Enhanced Feature Importance chart with proper data formatting
-3. Added edge case handling and debugging
+3. Fixed JSON parsing issues (nested `data.data`) in PatientRisk component
 4. Improved error handling and user feedback
 
 ## Current Issues Remaining
 
 ### Minor Issues
-1. **ModelService Auto-Initialization**: Some endpoints need automatic model loading
-2. **Docker**: Docker setup not tested (optional)
-3. **Error Handling**: Could be enhanced for better user experience
+1. **Docker**: Docker setup not tested (optional)
+2. **Error Handling**: Could be enhanced for better user experience
 
 ## Testing Results
 ========================= test session starts =========================
-collected 7 items                                                                 
+collected 16 items                                                                 
 
-tests\test_noshow_escalation.py ...                                        [ 42%]
-tests\test_predictions.py ....                                             [100%]
+tests\test_noshow_escalation.py ...                                        [ 18%]
+tests\test_predictions.py .............                                    [100%]
 
-========================= 7 passed, 5 warnings in 0.29s =========================
+========================= 16 passed, 5 warnings in 0.45s =========================
 
 ## API Endpoint Status
 - `/` - 200 (Root endpoint)
 - `/health` - 200 (Health check)  
 - `/noshow/feature-importance` - 200 (Feature importance)
-- `/predict/emergency` - ModelService not initialized yet
-- `/feature/surge-early-warning` - ModelService not initialized yet
+- `/predict/emergency` - 200 (ModelService initialized automatically)
+- `/feature/surge-early-warning` - 200 (ModelService initialized automatically)
 
 ## Next Steps
 1. [x] Fix ModelService auto-initialization for all endpoints (Fixed, and also fixed numpy.float32 serialization errors)
-2. Test full application stack (frontend + backend)
+2. [x] Test full application stack (frontend + backend) - Passed 
 3. Verify Docker setup if needed
 4. Add more comprehensive error handling
 
 ---
-**Last Updated**: Current fixes applied - Backend mostly functional
+**Last Updated**: July 26, 2026 - Application stack is fully functional!

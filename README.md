@@ -148,6 +148,9 @@ Hospital Pulse AI is an intelligent healthcare decision-support system that prov
   - **Auto-training**: Model automatically trains if not available
 
 ### 🔧 Technical Improvements
+- **Startup Script Added**: Included a smart proxy `main.py` and `start_backend.bat` script to fix local environment run paths and reliably launch the backend on port 8000.
+- **Frontend Bug Fixes**: Fixed JSON parsing issues with nested data objects in React components, allowing predictions and feature importance charts to render flawlessly.
+- **Backend Serialization Fixes**: Prevented crashes related to FastAPI JSON encoding by properly casting `numpy.float32` outputs from the ML models to standard Python floats.
 - **Production Deployment**: Ready for Render (backend) + Vercel (frontend)
 - **CORS Configuration**: Environment-based CORS with debug logging
 - **Error Handling**: Comprehensive frontend error management
@@ -388,7 +391,7 @@ python -m backend.main
 ### 🚧 Current Version
 - **Version**: 2.1
 - **Status**: Production Ready
-- **Last Updated**: March 31, 2026
+- **Last Updated**: July 26, 2026
 
 ---
 
